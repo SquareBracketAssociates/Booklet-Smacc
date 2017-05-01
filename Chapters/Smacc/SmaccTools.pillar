@@ -1,0 +1,12 @@
+!! Tools
+
+I believe what you want is to start debugging a parser with some script and then stepping through it.
+
+The SmaCC debugger only gets activated if the SmaCC code is in the execution context. So, if you do not have it yet you can “Step to debugger”.
+
+For example:
+- Try debugging:
+	==JavaParser parse: 'public class A {}'==
+- Then from the window menu, choose “Step to debugger” / “SmaCC”
+
++SmaCC Special Debugger available in Moose.>file://figures/SmaccSpecialDebugger.png|width=80|label=SmaccSpecialDebugger+

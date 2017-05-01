@@ -1,0 +1,37 @@
+!! About this booklet
+
+This booklet describes SmaCC the Smalltalk Compiler-Compiler developed by John Brant. 
+
+!!! Contents
+It contains:
+- A tutorial originally written by John Brant and Don Roberts (*SmaCC>http://www.refactory.com/Software/SmaCC*) and adapted to Pharo.
+- Syntax to declare Syntax trees.
+- Details about the directives.
+- Scanner and Parser details.
+- Support for transformations.
+- Idioms: Often we have recurring patterns and it is nice to document them.
+
+SmaCC was ported by Thierry Goubier to Pharo who is maintaining actively the Smacc Pharo port. SmaCC is used in production systems and support for example the automatic conversion from Delphi to C\# and other large projects. 
+
+
+!!! Obtaining SmaCC
+ 
+If you haven't already done so, you will first need to load Smacc.
+
+[[[
+Metacello new
+	baseline: 'SmaCC';
+	repository: 'github://ThierryGoubier/SmaCC';
+	load
+]]]
+ 
+ 
+Note that there is another version that appeared recently and that is now part of Moose *http://moosetechnology.com* the difference is that there are different tools to load the parsers/scanner and in addition there is a special debugger. 
+This debugger may be integrated in the future with the version used in this book.
+
+
+!!! Basics
+
+
+Scanning takes an input stream of characters and converts that into a stream of tokens. The tokens are then passed on to the parsing phase.
+Parsing converts the stream of tokens provided by the scanner into some object. 

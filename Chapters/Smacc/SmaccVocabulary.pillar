@@ -1,0 +1,126 @@
+!! Vocabulary
+
+
+
+!!! Reference example 
+
+Let us take the following grammar. 
+[[[
+<number> : [0-9]+ (\. [0-9]*) ? ;
+<whitespace> : \s+;
+
+%left "+" "-";
+%left "*" "/";
+%right "^";
+%annotate_tokens;
+%root Expression;
+%prefix AST;
+%suffix Node;
+
+Expression 
+	: Expression 'left' "+" 'operator' Expression 'right' {{Binary}}
+	| Expression 'left' "-" 'operator' Expression 'right' {{Binary}}
+	| Expression 'left' "*" 'operator' Expression 'right' {{Binary}}
+	| Expression 'left' "/" 'operator' Expression 'right' {{Binary}}
+	| Expression 'left' "^" 'operator' Expression 'right' {{Binary}}
+	| "(" Expression ")" {{}}
+	| Number
+	;
+Number 
+	: <number> {{Number}}
+	;
+]]]
+
+!!! Grammar structure
+
+It is composed of 
+
+- Scanner part: all rules starting with <>
+- Directive part: all lines starting with ==%==
+- Parser part: the rest
+
+
+!!!! Elements 
+
+!!!! Production rule
+
+The following expressions define two production rules 
+
+[[[
+Expression 
+	: Expression 'left' "+" 'operator' Expression 'right' {{Binary}}
+	| Expression 'left' "-" 'operator' Expression 'right' {{Binary}}
+	;
+
+Number 
+	: <number> {{Number}}
+	;
+]]] 
+
+A rule group is defined by several production rules.
+
+- Here the first production rule has two production rules.
+- While the seconde production rule has only one. 
+
+A production rule can be composed of
+- non terminal often starting with uppercase
+- scanner token
+- keywords (delimited by =="==)
+- variables (delimited by =='==)
+- and action (delimited by =={}==)
+
+
+!!!! Tokens
+
+Tokens are identified by the scanner. A token specification is composed of a token name and a token regular expressions. 
+
+[[[
+<TokenName>    :    RegularExpression ;
+]]]
+
+The following token specification describes a number: It starts with one or more digits, possibly followed by an decimal point with zero or more digits after it. The scanner definition for this token is:
+
+[[[
+<number>        :       [0-9]+ (\. [0-9]*) ? ;
+]]]
+
+Let's go over each part:
+
+; ==<number>==
+:Names the token identified by the expression. The name inside the <> must be a legal Pharo variable name.
+; ==:==
+:Separates the name of the token from the token's definition.
+; ==[0-9]==
+:Matches any single character in the range =='0'== to =='9'== (a digit). We could also use ==\\d== or ==<isDigit>== as these also match digits.
+; ==\+==
+:Matches the previous expression one or more times. In this case, we are matching one or more digits.
+; ==( ... )==
+:Groups subexpressions. In this case we are grouping the decimal point and the numbers following the decimal point.
+; ==\\.==
+:Matches the '.' character (. has a special meaning in regular expressions, \ quotes it).
+; ==\*==
+:Matches the previous expression zero or more times.
+; ==?==
+:Matches the previous expression zero or one time (i.e., it is optional).
+; ==;==
+:Terminates a token specification.
+
+!!!! Keywords
+
+Keywords are defined in the production and delimited by =="==. In the following 
+
+!!!! Non Terminal
+
+In the production rule ==Expression 'left' "+" 'operator' Expression 'right'==, Expression is a non terminal.
+
+!!!! Variables
+
+Variables give name to one element of a production. For example 
+
+[[[
+Expression 'left' "^" 'operator' Expression 'right'
+]]]
+
+- 'left' and 'right' denote the expression matched by the rules
+- 'operator' denotes the caret token. 
+

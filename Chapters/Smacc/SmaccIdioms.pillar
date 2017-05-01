@@ -1,0 +1,83 @@
+!! Grammar idiomatic patterns
+
+In this part, we want to share some coding grammar idioms. Imagine that we have a description using the traditional ==*== (for 0 or more), interrogation mark (? for 0 or 1) and ==\+== (for 1 or more). The question then is how can we express this 
+in SmaCC. 
+
+!!! Managing List
+
+Smacc automatically determines if, in the production rules, there is a recursion that represents a list.  In such case, it adds an ==s== to the generated instance variable and manage it as a list.
+
+Let us take an example
+
+[[[
+<a> : a;
+<whitespace> : \s+;
+
+%root Line;
+%prefix SmaccTutorial;
+
+Line 
+	: <a> 'line' {{}}
+	| Line <a> 'line' {{}}
+	;
+]]]
+
+Here we see that Line is recursive. Smacc will generate a class ==SmaccTutorialLine== with an instance variable ==lines== initialized as an ordered collection. 
+
+Pay attention, if the production is empty, the generation does not see the list.
+
+[[[
+Line 
+	:
+	| Line <a> 'line' {{}}
+	;
+]]]
+
+In such a case you should write it as follows:
+
+[[[
+Line
+	: {{}}
+	| Line <a> 'line' {{}}
+	;
+]]]
+
+
+!!! Expressing optional repetition
+Here is a typical expression mixing 
+
+[[[
+TypeNameList = '(' (TypeName (',' TypeName )* )? ')'
+]]]
+
+Here is how we can express it. 
+[[[
+ParenthesizedTypeNameList
+	: "(" TypeNameList_Opt ")"
+	;	
+	
+TypeNameList_Opt
+	: 
+	| TypeNameList
+	;
+	
+TypeNameList	
+	: TypeName 'typename' {{}}
+	| TypeNameList "," TypeName 'typename' {{}} 
+	;
+]]]
+
+Not that in the following 
+
+[[[
+TypeNameList_Opt
+	: 
+	| TypeNameList
+	;
+]]]
+
+will return nil when empty. If you want to get the node you should use =={{}}==
+
+
+
+
