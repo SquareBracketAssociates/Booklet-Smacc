@@ -1,14 +1,18 @@
 sudo: required
 services:
 - docker
+
 before_install:
 - docker pull dpollet/texlive:pillar
+
 script:
 - docker run --tty --rm --volume $PWD:/work dpollet/texlive:pillar make spiralbook
+
 deploy:
   provider: releases
   api_key:
     secure: f+Z1fe1+YrjKa0uHLcIy0VNIMIJ1FW0B0ZGBrfR4UsHwx1BEIZXD+qOqI2LcanaMBztsmmlgCHz74jcngPjHKtd1/EdfzV+jC+ZdPb8VQIqZbZXSkaYHlgzHN7o2umlfGR9n8zi8hO8uwnbiBRkWc9Q40ZCoDQ/VB+bsMBkdazBj4TeLzlXfHot0H9P3UYGhqC1qQIRC8T2qWArC/Iq/+xwevjLC1GiaXgdb65j0WOEEou39skOJJy3LcJc/e0rr31M8HG80iJn1wL2obieDkPaay7QQ0mTNudvYRu8qsXsNz1hy/kNSl5m0onlAYqn2BUQVVssw1lZcH2bij7rsScQZ2ibZjhK/9/ee+UTnklC3MfdRZKhCV+L+5QcQzP0XXNCxQvHHrmkF6vERVML4qCS7YoS6mn8FEquRI852Qf+Wmo2lPgrcIrupPgxH+ghoaFBnPfnUzc7i6SiGgvZ5R6HoqLc0FMELAhVRaIHlLRLRMsa//hX1iCSwO4e+yYk7zp3VLi2c6qXITt+cRlRvIOF5CrDXas4/kIdTiax8nLLwrKF3+tLhj7GDeiEhE4O5L8gT2aWrhDSNTKEdFi+X5i3Qn6eLn7ekSenFzYMRmrCbEFTHLVULE3WjJ8ZXJDRs5a9NfEQIWgxmbwyhRCw8NOKN9eiFA/xsj3r6S4nZ59E=
-  file: build/book.spiral.pdf
+  file: build/smacc.spiral.pdf
+  draft: true
   on:
     repo: SquareBracketAssociates/Booklet-Smacc

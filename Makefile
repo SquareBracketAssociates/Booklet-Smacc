@@ -1,4 +1,4 @@
-MAIN = book
+MAIN = smacc
 CHAPTERS = \
 	Chapters/Smacc/SmaccIntro \
 	Chapters/Smacc/SmaccTutorial \
