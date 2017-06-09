@@ -1,4 +1,4 @@
-!! Tools
+!! Debugging and Testing
 
 I believe what you want is to start debugging a parser with some script and then stepping through it.
 
@@ -10,3 +10,60 @@ For example:
 - Then from the window menu, choose “Step to debugger” / “SmaCC”
 
 +SmaCC Special Debugger available in Moose.>file://figures/SmaccSpecialDebugger.png|width=80|label=SmaccSpecialDebugger+
+
+
+!!! Understand Smacc Errors
+
+!!!! shift/reduce conflicts
+
+!!!! Reduce/reduce conficts
+
+
+
+
+
+!!! Unit testing
+
+Often you would like to test productions that are not top productions. In this case, you should add start symbol that specify that we can access different productions. 
+For example if you add the following to an hypothetical grammar:
+
+[[[
+%start file expression statement declaration;
+]]]
+
+SmaCC will generate the following class methods on the parseur: ==startingStateForfile==, ==startingStateForexpression==, ==startingStateForstatement== and ==startingStateFordeclaration==.
+
+
+[[[
+YourParserTest >> parseExpressionTest: str
+	((YourParser on: (ReadStream on: str)) setStartingState: YourParser startingStateForexpression) parse.
+]]]
+
+If you do not want to duplicate the logic in your tests you can extend the parser itself as follows. It is a design decision that is up to you. 
+
+[[[
+YourParser >> parseExpression: aString
+	"Parse an statement."
+
+	^ (self on: (ReadStream on: aString))
+		setStartingState: self startingStateForexpression;
+		parse
+]]]
+
+This is useful when you incrementally build your grammar and want to test it at different points. 
+
+!!! Parsing indentation dependent languages
+
+
+
+
+
+!!! Tips and Tricks 
+
+ANTRL conversion tips and tricks
+
+!!!! Fusion
+
+!!!! identifier vs. type
+
+

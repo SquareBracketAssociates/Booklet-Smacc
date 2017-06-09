@@ -43,6 +43,51 @@ Line
 ]]]
 
 
+!!! Expressing repetition
+
+[[[
+Function = ‘(‘  Arguments + ‘)’
+]]]
+
+
+should be transformed into 
+
+[[[
+Function	
+	: <name> "(" 'leftParen' _ArgumentsOption  ")" 'rightParen' {{}}; 
+
+_ArgumentsOption
+	: Arguments ;
+
+Arguments 
+	: Expression 'argument'
+	| Arguments "," Expression 'argument';
+]]]
+
+!!! Optional 
+
+[[[
+Function = ‘(‘  Arguments+ ‘)’
+]]]
+
+should be transformed into 
+
+[[[
+Function
+	: <name> "(" 'leftParen' _ArgumentsOption  ")" 'rightParen' {{}};
+
+_ArgumentsOption
+	:
+	| Arguments ;
+
+Arguments
+	: Expression 'argument' ;
+]]]
+
+
+
+
+
 !!! Expressing optional repetition
 Here is a typical expression mixing 
 
