@@ -1,0 +1,58 @@
+Here are some otes to be turned into text
+
+I met a woman that told me that she used ANTLR3 to do node transfromation in a declarative way (may be like Smacc). My internet connection is bad so I could not check.
+Now she told that what was really important for her was the possibility to add extra nodes during the transformation
+because she decorates the tree. 
+Do you have this kind of support for adding information that is not “from the language”?
+
+There are a few things you can do:
+
+1) You can add a new class to the AST hierarchy by using the %hierarchy directive in the grammar. For example, you can add an OptimizedExpression as a subclass of Expression by doing this:
+
+%hierarchy Expression ( OptimizedExpression );
+
+2) You can add variables to your AST node classes by using the %attributes directive. For example, you can add a variable “value" to your OptimizedExpression:
+
+%attributes OptimizedExpression ( value );
+
+3) You can add dummy productions in the grammar that create variables. For example, we can create an “items" variable in the AdditionExpression node and have it initialized to a new OrderedCollection:
+
+AdditionExpression : AdditionExpression ‘left’ “+” ‘op’ MultiplicationExpression ‘right’ OrderedCollectionProduction ‘items’ {{}};
+OrderedCollectionProduction : {OrderedCollection new};
+
+4) If you want dynamically add properties, you can use the #attributeNamed:{ifAbsent:/ifAbsentPut:/put:} methods. When parsing a string, we add the source to the root node using the attributeNamed:put: method. 
+
+5) You can define a class in the browser and use it. We could even use nodes from different parsers in the same tree — after all, it’s Smalltalk :). Of course, it might be difficult to make a visitor for the combined AST.
+
+
+
+Second answer
+
+Can you also add a node that is not in the grammar (I guess yes) but in the rewrite expression
+
+a <<< + >>> b <<< 
+=> 
+DecoratedNode { + >>>a<<< >>>b<<<<}
+
+
+SmaCC’s default rewriting is different than almost everyone else’s. Instead of rewriting the AST (which is then pretty printed back to source), it actually rewrites the original source. While the search expressions are AST nodes with patterns, the replace expressions are like macro strings with patterns.
+
+Here are the advantages that I see with SmaCC’s approach:
+
+*) It can be used to write plain text or things that don’t have AST. I’ve used it to create reports and csv files.
+
+*) It is good for incremental development of language transformations. We don’t need to have the whole transformation of language A to language B working — we can build it a little at a time. I believe that some get around this problem by having a generic AST that all languages use. This generic AST would then be pretty printed to the different languages. 
+
+*) The transformed source looks more like the original source since we didn’t have to run it through a pretty printer. For example, if they have extra blank lines between two statements, we will retain those blank lines. Some of the AST rewriters store the whitespace tokens so that they can format better, but not all do, and it requires some extra work to keep this information.
+
+*) It is easy to mix pattern transformations with code that edits the source. There are methods to insert, delete, replace, and move text around. For example, I can rewrite “`a` + `a`” using either a pattern expression “`a` * 2” or by executing some code: “self replace: match right with: ‘2’”. Sometimes the imperative code is easier to understand than the patterns.
+
+*) SmaCC tracks which rules made each edit. This is especially useful for debugging the rules. I can select some text in the before or after source panes, and it lists all rules that affected the selection. I think this should be possible in the AST rewriters, but I don’t know of any that show this information so I’m guessing that it harder to do.
+
+A couple drawbacks are:
+
+*) You may need to parse things multiple times. For example, with an AST rewriter, you can transform the AST multiple times before you pretty print it. In practice, we normally make three parses. The first one creates a bunch of symbol table files that can be loaded on demand later. The second parse does most of the actual work of the conversion (reading the source language and writing the target). The final parse is a code cleanup. The code cleanup might not be necessary, but often it can make the conversion a little easier to perform. For my current PowerBuilder to C# project, I can do all three parses in ~4 minutes. The original code has ~4000 files and it generates >3 million lines of C# so I don’t think 4 minutes is too bad.
+
+*) If you have multiple source and target languages, you can get the n^2 effect where you need to write the converter for each source/target combination. The AST rewriters that don’t have this problem are the ones with the generic AST nodes. 
+
+
