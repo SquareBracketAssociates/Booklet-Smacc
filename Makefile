@@ -11,12 +11,11 @@ CHAPTERS = \
 	Chapters/Smacc/SmaccVocabulary \
 	Chapters/Smacc/SmaccConclusion \
 
-
-OUTPUTDIRECTORY = build
-LATEXTEMPLATE = support/templates/main.latex.mustache
-LATEXCHAPTERTEMPLATE = support/templates/chapter.latex.mustache
-HTMLTEMPLATE = support/templates/html.mustache
-HTMLCHAPTERTEMPLATE = $(HTMLTEMPLATE)
+OUTPUTDIRECTORY := $(shell ./pillar introspect outputDirectory)
+LATEXTEMPLATE := $(shell ./pillar introspect latexTemplate)
+LATEXCHAPTERTEMPLATE := $(shell ./pillar introspect latexChapterTemplate)
+HTMLTEMPLATE := $(shell ./pillar introspect htmlTemplate)
+HTMLCHAPTERTEMPLATE := $(shell ./pillar introspect htmlChapterTemplate)
 
 .DEFAULT_GOAL = help
 .phony: all book chapters
