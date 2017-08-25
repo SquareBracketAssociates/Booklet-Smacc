@@ -18,7 +18,7 @@
 
     "files": [
         {
-            "includePattern": "build/(smacc).pdf",
+            "includePattern": "build/(smacc).spiral.pdf",
             "uploadPattern": "$1-wip.pdf",
             "matrixParams": { "override": 1 }
         }
