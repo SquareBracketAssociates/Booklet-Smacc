@@ -1,6 +1,6 @@
 !! About this booklet
 
-This booklet describes SmaCC the Smalltalk Compiler-Compiler developed by John Brant. 
+This booklet describes SmaCC, the Smalltalk Compiler-Compiler originally developed by John Brant. 
 
 !!! Contents
 It contains:
@@ -11,12 +11,13 @@ It contains:
 - Support for transformations.
 - Idioms: Often we have recurring patterns and it is nice to document them.
 
-SmaCC was ported by Thierry Goubier to Pharo who is maintaining actively the Smacc Pharo port. SmaCC is used in production systems and support for example the automatic conversion from Delphi to C\# and other large projects. 
+SmaCC was ported to Pharo by Thierry Goubier, who actively maintains the SmaCC Pharo port. SmaCC is used in production systems;
+for example, it supports the automatic conversion from Delphi to C\#. 
 
 
 !!! Obtaining SmaCC
  
-If you haven't already done so, you will first need to load Smacc.
+If you haven't already done so, you will need to load Smacc.  Execute this code in a Pharo playground:
 
 [[[
 Metacello new
@@ -26,12 +27,13 @@ Metacello new
 ]]]
  
  
-Note that there is another version that appeared recently and that is now part of Moose *http://moosetechnology.com* the difference is that there are different tools to load the parsers/scanner and in addition there is a special debugger. 
-This debugger may be integrated in the future with the version used in this book.
+Note that there is another version of SmaCC that is now part of Moose *http://moosetechnology.com*.
+The difference is that the Moose version uses different tools to load the parser and scanner, and incorporates a special debugger. 
+In the future, this debugger may be integrated with the version of SmaCC described in this book.
 
 
 !!! Basics
 
-
-Scanning takes an input stream of characters and converts that into a stream of tokens. The tokens are then passed on to the parsing phase.
-Parsing converts the stream of tokens provided by the scanner into some object. 
+The compilation process comprises two phases: scanning (sometimes called lexing) and parsing.
+Scanning converts an input stream of characters into a stream of ''tokens''. These tokens form the input to the parsing phase.
+Parsing converts the stream of tokens into some object: exactly ''what'' object is determined by you, the user of SmaCC.
