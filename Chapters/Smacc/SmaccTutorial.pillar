@@ -103,12 +103,12 @@ Whenever SmaCC creates new classes, they are placed in the package (or package t
 
 !!! Testing Our Parser
 
-Now we are ready to test our parser. Go to the "test" pane, enter ==3 \+ 4==, and press "Parse"; you will see that the parser correctly parses it. If you press "Parse and explore"  (or "Parse and inspect") you will see an explorer, as shown in Figure *@3plus4Explorer* (or an inspector, as shown in Figure *@3plus4Inspector*) on an OrderedCollection that contains the parsed tokens. This is because we haven't specified what the parser is supposed to do when it parses. 
+Now we are ready to test our parser. Go to the "test" pane, enter ==3 \+ 4==, and press "Parse"; you will see that the parser correctly parses it. If you press "Parse and inspect" you will see an inspector on an OrderedCollection that contains the parsed tokens, as shown in Figure *@3plus4Explorer*. This is because we haven't specified what the parser is supposed to do when it parses.
 
 You can also enter incorrect items as test input. For example, try to parse ==3 \+ \+ 4== or ==3 \+ a==. An error message should appear in the text.
 
-+Explorer on 3 \+ 4>file://figures/3plus4Explorer.png|width=40|label=3plus4Explorer+
-+Inspector on 3 \+ 4>file://figures/3plus4Inspector.png|width=40|label=3plus4Inspector+
++Inspector on 3 \+ 4>file://figures/3plus4Explorer.png|width=40|label=3plus4Explorer+
+
 
 If you are interested in the generated parser, you may wish to look at the output from compiling the parser in the Symbols or Item Sets tab. 
 
