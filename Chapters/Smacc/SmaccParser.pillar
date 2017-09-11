@@ -55,7 +55,7 @@ While the error recovery allows you to proceed parsing after a syntax error, it 
 
 !!!Shortcuts
 
-Extended BNF grammars extend the usual notation for grammar productions with some convenient shortcuts.  SmaCC supports the common notation of ==*== (for 0 or more), question mark (? for 0 or 1) and ==\+== (for 1 or more).  For example, rather than specifying a ==ParameterList== in the conventional way, like this
+Extended BNF grammars extend the usual notation for grammar productions with some convenient shortcuts.  SmaCC supports the common notations of star (==\*==) for 0 or more, question mark (==?==) for 0 or 1, and plus (==\+==) for 1 or more repetitions of the preceding item.  For example, rather than specifying a ==ParameterList== in the conventional way, like this
 
 [[[
 <name> :  [a-zA-Z]  ([a-zA-Z]  | [0-9] | _ | ')*;
@@ -71,7 +71,7 @@ Parameter
 	;
 ]]]
 
-We can be more concise and specify it like this:
+we can be more concise and specify it like this:
 
 [[[
 <name> :  [a-zA-Z]  ([a-zA-Z]  | [0-9] | _ | ')*;
