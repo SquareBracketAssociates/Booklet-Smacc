@@ -252,4 +252,6 @@ Number
 
 Once you have compiled the grammar, you will be able to evaluate ==3 \+ 4 \* 5 ^ 2 ^ 2== to get 2503. Since the exponent operator ==^== is defined to be right associative, this expression is evaluated as ==3 \+ (4 \* (5 ^ (2 ^ 2)))==. We can also evaluate expressions with parentheses. For example, evaluating ==(3 \+ 4) \* (5 - 2) ^ 3== results in 189.
 
-If you would like to extend the calculator to create abstract syntax trees (ASTs) rather than to compute result, you should keep reading. If you want more information on other SmaCC options, you can visit the directives, scanner, and parser sections.
+The sections that follow provide more information on  SmaCC's scanner and parser, and on the directives that control SmaCC.
+
+Subsequent sections explain how SmaCC can automatically produce an AST for you, and even how one parse tree can be transformed into another.
