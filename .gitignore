@@ -1,3 +1,4 @@
+*.xcworkspace
 /Pharo.*
 /pharo
 /pharo-ui
