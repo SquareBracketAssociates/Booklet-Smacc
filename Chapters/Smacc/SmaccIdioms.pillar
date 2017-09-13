@@ -73,7 +73,7 @@ Parameter
 ]]]
 
 If the above grammar is used to parse a list of three names, it will generate
-a ==SmaccTutorialParameterList== AST node with a ==params== instance variable
+an AST node class called ==SmaccTutorialParameterList== with a ==params== instance variable
 that holds an ordered collection.
 However, the contents of the ordered collection will ''not'' be the three parameters.
 Instead, the collection will have ''two'' elements: a parameter list
@@ -99,8 +99,7 @@ Parameter
 ]]]
 
 not only is the grammar easier to read, but the generated AST will be simpler.
-The generated ==SmaccTutorialParameterList== node will contain an instance variable ==params==
-that will be initialized to be an ordered collection of three ==SmaCCTutorialParameter== nodes.
+The generated AST node, ==SmaccTutorialParameterList==, will contain an instance variable ==params== that will be initialized to be an ordered collection of three ==SmaCCTutorialParameter== nodes.
 
 Similarly, if you use a ==\*==, you will get an ordered collection containing zero or more items.
 However, if you use a ==?==, you don't get a collection: you get either ==nil== (if the item was
@@ -108,9 +107,7 @@ absent), or the generated node (if it was present).
 
 !!! Expressing Optional Features
 
-Often, lists contain separators, which makes specifying
-lists a little more complex.  Here is a grammar in which
-lists of names can be of arbitrary length, but the list items must be separated with commas.  It expresses this with the ==?== shortcut.
+Often, lists contain separators, which makes specifying them a little more complex.  Here is a grammar in which lists of names can be of arbitrary length, but the list items must be separated with commas.  It expresses this with the ==?== shortcut.
 
 [[[
 <name> :  [a-zA-Z]  ([a-zA-Z]  | [0-9] | _ | ')*;
