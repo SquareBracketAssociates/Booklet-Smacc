@@ -28,9 +28,7 @@ Metacello new
  
  
 Note that there is another version of SmaCC that is now part of Moose *http://moosetechnology.com*.
-The difference is that the Moose version uses different tools to load the parser and scanner, and incorporates a special debugger. 
-In the future, this debugger may be integrated with the version of SmaCC described in this book.
-
+The difference between them is that the Moose version uses different tools to load the parser and scanner, and incorporates a special debugger. In addition, the Moose version does not support the parser shortcuts described in the *Section "Shortcuts">@shortcuts*. In the future, we hope that these versions will be unified.
 
 !!! Basics
 

@@ -2,7 +2,7 @@
 
 I believe what you want is to start debugging a parser with some script and then stepping through it.
 
-The SmaCC debugger only gets activated if the SmaCC code is in the execution context. So, if you do not have it yet you can “Step to debugger”.
+The SmaCC debugger is activated only when the SmaCC code is in the execution context. So, if you do not have it yet you can “Step to debugger”.
 
 For example:
 - Try debugging:
