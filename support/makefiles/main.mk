@@ -1,5 +1,6 @@
 MAIN := $(shell ./pillar introspect mainDocument)
 
+CHAPTERS := $(shell ./pillar introspect chapters)
 OUTPUTDIRECTORY := $(shell ./pillar introspect outputDirectory)
 LATEXTEMPLATE := $(shell ./pillar introspect latexTemplate)
 LATEXCHAPTERTEMPLATE := $(shell ./pillar introspect latexChapterTemplate)
