@@ -80,7 +80,21 @@ Instead, the collection will have ''two'' elements: a parameter list
 (which will contain an ordered collection of two parameters), and a parameter
 that contains the third.  Why?  Because that's what the grammar specifies!
 
-If, instead, you specify the same language using ==\+==, like this:
+There is a trick that will instead generate a collection of three elements:
+remove the name =='param'== from after the recursive appearace of the non-terminal ==ParameterList== 
+in the second alternative for ==ParameterList==:
+
+[[[
+ParameterList
+    : Parameter 'param' {{}}
+    | ParameterList Parameter 'param' {{}}
+    ;
+]]]
+
+Now you will get a collection ==params== containing ''all'' the parameters.
+
+
+You can also specify the same language using ==\+==, like this:
 [[[
 <name> :  [a-zA-Z]  ([a-zA-Z]  | [0-9] | _ | ')*;
 <whitespace>:  (\x20|\xA0|\r)* ;
@@ -98,10 +112,9 @@ Parameter
     ;
 ]]]
 
-not only is the grammar easier to read, but the generated AST will be simpler.
-The generated AST node, ==SmaccTutorialParameterList==, will contain an instance variable ==params== that will be initialized to be an ordered collection of three ==SmaCCTutorialParameter== nodes.
+Not only is this grammar easier to read, but the generated AST will contain a single collection of parameters.  If you parse three names, the result will be a ==SmaccTutorialParameterList== object that contains an instance variable ==params== that will be initialized to be an ordered collection of three ==SmaCCTutorialParameter== nodes.
 
-Similarly, if you use a ==\*==, you will get an ordered collection containing zero or more items.
+In a similar way, if you use a ==\*==, you will get an ordered collection containing zero or more items.
 However, if you use a ==?==, you don't get a collection: you get either ==nil== (if the item was
 absent), or the generated node (if it was present).
 
@@ -128,25 +141,50 @@ Name
 
 SmaCC recognizes this idiom, and will generate an ordered collection of zero or more names.  If you want this behaviour, it is important to use the same instance variable name (here ==n==) for both the base case and the ==\*== repetition.  If you use different names
 
-[[
+[[[
 NameList
 	: ( Name 'n1' ( ","  Name 'n2' ) *)? {{}}
 	;
-]]
+]]]
 
 then the generated node will have two instance variables:  ==n1== will be either ==nil== (if the input list is empty) or will contain the first ==Name== if it is not, while ==n2s== will be a collection containing the remaining Names (zero when the input list has length one).
+
+
+If you prefer not to use the ==\*== and ==?== shortcuts (or are using a verison of SmaCC that does not support them), you can get
+the same effect using recursion:
+
+[[[
+NameList
+	:    {{}}
+	|  NonEmptyNameList 
+	;
+	
+NonEmptyNameList	
+	: Name 'name' {{}}
+	| NonEmptyNameList  "," Name 'name' {{}} 
+	;
+
+Name
+	: <name> {{ }}
+	;
+]]]
+
+Once again, note that no name is given to the recursive use of ==NonEmptyNameList==.
 
 In general, empty alternatives will be represented as ==nil==.  This avoids generating many useless objects.  So
 
 [[[
-NameListOption
-	: 
-	| NameList
+NameList
+	:  
+	|  NonEmptyNameList 
 	;
 ]]]
 
-will return nil when the empty. If you want to get an empty collection node, use =={{}}== for the empty alternative.
+will return nil when it matches the empty input. If instead you want an empty ==NameList== node, use =={{}}== for the empty alternative:
 
-
-
-
+[[[
+NameList
+	:    {{}}
+	|  NonEmptyNameList 
+	;
+]]]
