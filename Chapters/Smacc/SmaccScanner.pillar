@@ -14,7 +14,8 @@ TokenName is a valid  variable name that is surrounded by ==<>==. For example, =
 
 !!!Regular Expression Syntax
 
-While the rules are specified as regular expressions, there are many different syntaxes for regular expressions. We choose a relatively simple syntax that is specified below. If you wish to have a  richer syntax, you can modify the scanner's parser: ==SmaCCDefinitionScanner== and ==SmaCCDefinitionParser==. These classes were created using SmaCC.
+While the rules are specified as regular expressions, there are many different syntaxes for regular expressions. SmaCC uses a relatively simple syntax, which is specified below. If you wish to have a  richer syntax, you can modify the scanner's parser: ==SmaCCDefinitionScanner== and ==SmaCCDefinitionParser==. These classes were created using SmaCC.
+
 
 ;\\character
 :Matches a special character. The character immediately following the backslash is matched exactly, unless it is a letter. Backslash-letter combinations have other meanings and are specified below.
@@ -71,8 +72,9 @@ While the rules are specified as regular expressions, there are many different s
 
 Since there are multiple ways to combine expressions, we need precedence rules for their combination. The or operator, ==\|==, has the lowest precedence and the ==\*==, ==?==, ==\+==, and =={,}== operators have the highest precedence. For example, ==a | b c \*== matches ==a== or ==bcccc==, but not ==accc== or ==bcbcbc==. If you wish to match ==a== or ==b== followed by any number of c's, you need to use ==(a | b) c \*==.
 
-
-
+Whitespace is ignored in SmaCC regular expressions everywhere ''except'' within square brackets. This means that you can
+add spaces between terms to make your REs more readable.  However, inside square brackets, spaces are significant, so don't
+add spaces there unless you mean to include space (or, with ==^==, to ''exclude'' space) from the set of allowable characters.
 
 
 !!!Overlapping Tokens
