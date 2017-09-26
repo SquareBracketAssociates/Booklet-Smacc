@@ -46,7 +46,7 @@ While the rules are specified as regular expressions, there are many different s
 ;\\xHexNumber
 :Matches a character specified by the hex number following the ==\\x==. The hex number must be at least one character long and no more than four characters for Unicode characters and two characters for non-Unicode characters. For example, ==\\x20== matches the space character ==(Character value: 16r20)==, and ==\\x1FFF== matches ==Character value: 16r1FFF==.
 ;<token>
-:Copies the definition of <token> into the current regular expression. For 	example, if we have ==<hexdigit> : \\d \| [A-F] ;==, we can use ==<hexdigit>== in a later rule: ==<hexnumber> : <hexdigit> \+ ;==.
+:Copies the definition of <token> into the current regular expression. For 	example, if we have ==<hexdigit> : \\d \| [A-F] ;==, we can use ==<hexdigit>== in a later rule: ==<hexnumber> : <hexdigit> \+ ;==.  Note that you must define a token ''before'' you use it in another rule.
 ;<isMethod>
 :Copies the characters where ==Character>>isMethod== returns true into the current regular expression. For example, instead of using ==\\d==, we could use ==<isDigit>== since ==Character>>isDigit== returns true for digits.
 ;[characters]
