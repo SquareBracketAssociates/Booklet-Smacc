@@ -91,13 +91,32 @@ This definition will match a variable or a single character. A variable can also
 If you want the parser to attempt to parse will all the possible kinds of token, override the method ==SmaCCParser>>tryAllTokens== to answer ==true== instead of ==false==.
 
 
-!!!Matching Methods
+!!!Token Action Methods
 
-A ''matching method'' is a hand-written method in your scanner whose name is the same as the name of a token, (for example, the method ==whitespace==).  The matching method will be executed whenever a token with the corresponding name is recognized. Notice that the ==SmaCCScanner== superclass has default implementations of methods ==whitespace== and ==comment==; these methods ignore those tokens by default. If you want to store comments, then you should override the ==SmaCCScanner>>comment== method.
+A ''Token Action Method'' is a hand-written method in your scanner whose name is the same as the name of a token, (for example, the method ==whitespace==). For this reason, token action methods are sometimes also called "matching methods".
 
-When implementing a matching method, you can find the characters that comprise the token in the ==outputStream== (an instance variable inherited from ==SmaCCScanner==).  Your method should answer a ==SmaCCToken==.
+A token action method will be executed whenever a token with the corresponding name is recognized. Notice that the ==SmaCCScanner== superclass has default implementations of methods ==whitespace== and ==comment==; these methods are executed whenever the tokens ==<whitespace>== and ==<comment>== are scanned, and ignore those tokens. If you want to store comments, then you should override the ==SmaCCScanner>>comment== method.
 
-Matching methods can also be used to handle overlapping token classes. For example, in the C grammar, a type definition is lexically identical to an identifier. The only way that they can be disambiguated is by looking up the name in the type table. In our example C scanner, we have an IDENTIFIER method that is used to determine whether the token is really an IDENTIFIER or whether it is a TYPE_NAME:
+When implementing a Token Action Method, you can find the characters that comprise the token in the ==outputStream==, an instance variable inherited from ==SmaCCScanner==.  Your method ''must'' answer a ==SmaCCToken==.  Here are two examples.
+
+[[[
+whitespace
+	"By default, eat the whitespace"
+
+	self resetScanner.
+	^ self scanForToken
+]]]
+This is the default action when spaces are scanned: the scanner is reset, and then used to scan for the token ''following'' the spaces.  This following token is returned; as a consequence, the spaces are ignored.
+
+[[[
+leftBrace
+	braceDepth := braceDepth + 1.
+	^ self createTokenFor: '{'
+]]]
+This is the token action from a scanner that needs to keep track of the number of ==<leftBrace>== tokens.
+After incrementing a counter, it returns the same token that would have been created if the there had been no token action.
+
+Token Action Methods can also be used to handle overlapping token classes. For example, in the C grammar, a type definition is lexically identical to an identifier. The only way that they can be disambiguated is by looking up the name in the type table. In our example C scanner, we have an IDENTIFIER method that is used to determine whether the token is really an IDENTIFIER or whether it is a TYPE_NAME:
 [[[
 IDENTIFIER
 	| name |
@@ -117,4 +136,4 @@ If a token is not referenced from a grammar specification, it will not be includ
 
 !!!Unicode Characters
 
-SmaCC compiles the scanner into a bunch of conditional tests on characters. Normally, it assumes that characters have values between 0 and 255, and it can make some optimizations based on this fact. With the "Allow Unicode Characters" option checked, it will assume that characters have values between 0 and 65535. 
+SmaCC compiles the scanner into a bunch of conditional tests on characters. Normally, it assumes that characters have values between 0 and 255, and it can make some optimizations based on this fact. With the directive ==%unicode;= in the input, SmaCC will assume that characters have values between 0 and 65535.  Unicode characters outside that range are not at present handled.
