@@ -53,4 +53,38 @@ Statements : Expression | Statements "." Expression | error "." Expression ;
 
 While the error recovery allows you to proceed parsing after a syntax error, it will not allow you to return a parse tree from the input. Once the input has been parsed with errors, it will raise a non-resumable SmaCCParserError.
 
+!!!Shortcuts
+@shortcuts
 
+Extended BNF grammars extend the usual notation for grammar productions with some convenient shortcuts.  SmaCC (but not the Moose version) supports the common notations of star (==\*==) for 0 or more, question mark (==?==) for 0 or 1, and plus (==\+==) for 1 or more repetitions of the preceding item.  For example, rather than specifying a ==ParameterList== in the conventional way, like this
+
+[[[
+<name> :  [a-zA-Z]  ([a-zA-Z]  | [0-9] | _ | ')*;
+<whitespace>:  (\x20|\xA0|\r)* ;
+
+ParameterList
+	: Parameter
+	| ParameterList Parameter
+	;
+	
+Parameter
+	: <name>
+	;
+]]]
+
+we can be more concise and specify it like this:
+
+[[[
+<name> :  [a-zA-Z]  ([a-zA-Z]  | [0-9] | _ | ')*;
+<whitespace>:  (\x20|\xA0|\r)* ;
+
+ParameterList
+	: Parameter  +
+	;
+	
+Parameter
+	: <name>
+	;
+]]]
+
+If we are generating an AST, these shortcuts have the aditional advantage of producing more compact AST nodes. For more information, see the Chapter on *Idioms>@idioms*.
