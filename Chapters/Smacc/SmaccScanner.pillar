@@ -138,4 +138,4 @@ If a token is not referenced from a grammar specification, it will not be includ
 
 !!!Unicode Characters
 
-SmaCC compiles the scanner into a bunch of conditional tests on characters. Normally, it assumes that characters have values between 0 and 255, and it can make some optimizations based on this fact. With the directive ==%unicode;= in the input, SmaCC will assume that characters have values between 0 and 65535.  Unicode characters outside that range are not at present handled.
+SmaCC compiles the scanner into a bunch of conditional tests on characters. Normally, it assumes that characters have values between 0 and 255, and it can make some optimizations based on this fact. With the directive ==%unicode== in the input, SmaCC will assume that characters have values between 0 and 65535.  Unicode characters outside that range are not at present handled.
