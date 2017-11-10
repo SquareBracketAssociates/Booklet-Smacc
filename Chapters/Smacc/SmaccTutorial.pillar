@@ -11,14 +11,14 @@ Once you have loaded the code of SmaCC, you should open the SmaCC Parser Generat
 +SmaCC GUI Tool: The place to define the scanner and parser.>file://figures/SmaCCGUI.png|width=80|label=SmaCCGUI+
 
 Our first calculator is going to be relatively simple. It is going to take two numbers and add them together. 
-To get started
-- Edit the definition the pane below the compile LR(1) buttons.
-- Once you are done: 
--- Click on the Scanner class and type ExpressionScanner.
--- Click on the Parser class and type ExpressionParser.
-- press either Compiler LR(1) or Compiled LALR(1) buttons.
+To use the SmaCC tool:
+- Edit the definition in the pane below the buttons.
+- Once you are done:
+-- Accept (with the context menu) or Save (the button)
+-- Name your parser (and scanner) by typing a name (for example, CalculatorParser) in the text field at the left of the Parser label, followed by return.
+- press either Compiler LR(1) or Compiled LALR(1) buttons to compile the parser.
 
-You are now ready to edit first your scanner and parser. Note that you edit everything in one file (using the SmaCC tool).
+You are now ready to edit your first scanner and parser. Note that you edit everything in one file (using the SmaCC tool).
 Once compiled, the tools will generate two classes and fill them with sufficient information to create the scanner and parser, as shown as Figure *@SmaCCTutorial*.
 
 
@@ -68,7 +68,7 @@ SmaCCScanner >> whitespace
 	^ self scanForToken
 ]]]
 
-==SmaCCScanner== also defines a ==comment== method that behaves similarly. However, the ==SmaCCScanner>>comment== method also stores the interval in the source where the comment occurred in the ==comments== instance variable.
+==SmaCCScanner== also defines a ==comment== method. That method both ignores the comment token (does not create a token for the parser) and stores the interval in the source where the comment occurred in the ==comments== instance variable.
 
 [[[
 SmaCCScanner >> comment
@@ -76,7 +76,7 @@ SmaCCScanner >> comment
 	^ self whitespace
 ]]]
 
-The only other token that will appear in our system is the ==\+== token for addition. However, since this token is a constant, there is no need to define it as a token in the scanner.  Instead, we can enter it directly (as a quoted string) in the grammar rules
+The only other token that will appear in our system is the ==\+== token for addition. However, since this token is a constant, there is no need to define it as a token in the scanner.  Instead, we will enter it directly (as a quoted string) in the grammar rules
 that define the parser.
 
 !!! Second, the Calculator Grammar
@@ -99,7 +99,7 @@ This basically says that an expression is either a number, or an expression adde
 !!! Compile the Scanner and the Parser
 We are almost ready to compile a parser now, but first we need to specify the names of the scanner and parser classes that SmaCC will create. These names are entered using the ==...== buttons for scanner class and parser class. Enter ==CalculatorScanner== and ==CalculatorParser== respectively. Once the class names are entered, press Compile LR(1) or Compile LALR(1). This will create new Pharo classes for the ==CalculatorScanner== and ==CalculatorParser==, and compile several methods in those classes. All the methods that SmaCC compiles will go into a "generated" method protocol. You should not change those methods or add new methods to the "generated" method protocols, because these methods are replaced or deleted each time you compile.
 
-Whenever SmaCC creates new classes, they are placed in the package (or package tag) named in the Package entry box. You may wish to select a different package by pressing '...'.
+Whenever SmaCC creates new classes, they are placed in the package (or package tag) named in the Package entry box. You may wish to select a different package by selecting it in the drop down menu or writing its name.
 
 !!! Testing Our Parser
 
