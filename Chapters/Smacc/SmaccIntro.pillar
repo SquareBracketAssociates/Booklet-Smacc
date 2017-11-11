@@ -32,6 +32,6 @@ The difference between them is that the Moose version uses different tools to lo
 
 !!! Basics
 
-The compilation process comprises two phases: scanning (sometimes called lexing) and parsing.
+The compilation process comprises two phases: scanning (sometimes called lexing or lexical analysis) and parsing (which usually covers syntax analysis and semantic analysis).
 Scanning converts an input stream of characters into a stream of ''tokens''. These tokens form the input to the parsing phase.
 Parsing converts the stream of tokens into some object: exactly ''what'' object is determined by you, the user of SmaCC.

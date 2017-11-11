@@ -1,6 +1,5 @@
 !!SmaCC Scanner
 
-
 Scanning takes an input stream of characters and converts that into a stream of tokens. The tokens are then passed on to the parsing phase.
 
 The scanner is specified by a collection of token specifications. Each token is specified by:
@@ -9,12 +8,12 @@ The scanner is specified by a collection of token specifications. Each token is 
 TokenName    :    RegularExpression ;
 ]]]
 
-TokenName is a valid  variable name that is surrounded by ==<>==. For example, ==<token>== is a valid ==TokenName==, but ==<token name>== is not since ==token name== isn't a valid  variable name. The ==RegularExpression== is a regular expression that matches a token. It should match one or more characters in the input stream. The colon character, ==:==, is used to separate the TokenName and the ==RegularExpression==, and the semicolon character, ==;==, is used to terminate the token specification.
+TokenName is a valid  variable name surrounded by ==<>==. For example, ==<token>== is a valid ==TokenName==, but ==<token name>== is not since ==token name== isn't a valid variable name. The ==RegularExpression== is a regular expression that matches a token. It should match one or more characters in the input stream. The colon character, ==:==, is used to separate the TokenName and the ==RegularExpression==, and the semicolon character, ==;==, is used to terminate the token specification.
 
 
 !!!Regular Expression Syntax
 
-While the rules are specified as regular expressions, there are many different syntaxes for regular expressions. SmaCC uses a relatively simple syntax, which is specified below. If you wish to have a  richer syntax, you can modify the scanner's parser: ==SmaCCDefinitionScanner== and ==SmaCCDefinitionParser==. These classes were created using SmaCC.
+While the rules are specified as regular expressions, there are many different syntaxes for regular expressions. SmaCC uses a relatively simple syntax, which is specified below. If you wish to have a richer syntax, you can modify the scanner's parser: ==SmaCCDefinitionScanner== and ==SmaCCDefinitionParser==. These classes were created using SmaCC and can be studied.
 
 
 ;\\character
@@ -87,15 +86,17 @@ SmaCC can handle overlapping tokens without any problems. For example, the follo
 ]]]
 
 This definition will match a variable or a single character. A variable can also be a single character ==[a-zA-Z]==, so the two tokens overlap. SmaCC handles overlapping tokens by preferring the longest matching token. If multiple token definitions match sequences of the same maximum length, first token specified by the grammar is chosen. For example, an ==a== could be a ==<variable>== or an ==<any_character>== token, but since ==<variable>== is specified first, SmaCC will prefer it.
+SmaCC associate automatically a numerical id with each token name; overlapping tokens are implemented as a list of ids, and the preferred id is the first one.
 
-If you want the parser to attempt to parse will all the possible kinds of token, override the method ==SmaCCParser>>tryAllTokens== to answer ==true== instead of ==false==.
+If you want the parser to attempt to parse will all the possible kinds of token, override the method ==SmaCCParser>>tryAllTokens== in your parser to answer ==true== instead of ==false==. The effect of ==#tryAllTokens== depends on
+the type of parser generated: if glr, then the parser will fork on all the ids of the token; if non glr (that is LR(1) or LALR(1)), the parser will try the other ids of the token if the first one triggers an error.
 
 
 !!!Token Action Methods
 
 A ''Token Action Method'' is a hand-written method in your scanner whose name is the same as the name of a token, (for example, the method ==whitespace==). For this reason, token action methods are sometimes also called "matching methods".
 
-A token action method will be executed whenever a token with the corresponding name is recognized. Notice that the ==SmaCCScanner== superclass has default implementations of methods ==whitespace== and ==comment==; these methods are executed whenever the tokens ==<whitespace>== and ==<comment>== are scanned, and ignore those tokens. If you want to store comments, then you should override the ==SmaCCScanner>>comment== method.
+A token action method will be executed whenever a token with the corresponding name is recognized. We have already seen that the ==SmaCCScanner== superclass has default implementations of methods ==whitespace== and ==comment==; these methods are executed whenever the tokens ==<whitespace>== and ==<comment>== are scanned, ignore those tokens, and record the comments ranges in the source text (which are made available inside SmaCC generated ASTs, see chapter). If you want to store comments, then you should study the approach used to record comments in ==SmaCCScanner== and ==SmaCCParser== and eventually modify the ==SmaCCScanner>>comment== method.
 
 When implementing a Token Action Method, you can find the characters that comprise the token in the ==outputStream==, an instance variable inherited from ==SmaCCScanner==.  Your method ''must'' answer a ==SmaCCToken==.  Here are two examples.
 
@@ -128,6 +129,7 @@ IDENTIFIER
 	^ SmaCCToken value: name start: start ids: matchActions
 ]]]
 
+In this example, ==#TypeNameId== and ==#IDENTIFIERId== are methods generated by SmaCC with the ==\%id== directive (see subsection).
 
 !!!Unreferenced Tokens
 
@@ -136,4 +138,5 @@ If a token is not referenced from a grammar specification, it will not be includ
 
 !!!Unicode Characters
 
-SmaCC compiles the scanner into a bunch of conditional tests on characters. Normally, it assumes that characters have values between 0 and 255, and it can make some optimizations based on this fact. With the directive ==%unicode;= in the input, SmaCC will assume that characters have values between 0 and 65535.  Unicode characters outside that range are not at present handled.
+SmaCC compiles the scanner into a bunch of conditional tests on characters. Normally, it assumes that characters have values between 0 and 255, and it can make some optimizations based on this fact. With the directive ==%unicode== in the input, SmaCC will assume that characters have values between 0 and 65535.  Unicode characters outside that range are not at present handled, and SmaCC
+is significantly slower with this option activated.
