@@ -1,20 +1,18 @@
 !! SmaCC Transformations
 
-Once you have generated your AST using SmaCC, you may want to use SmaCC's built-in tools to transform the AST.
-For example, transforming the AST may make it easier to generate code. 
-
+Once you have generated a parser for your language, you can use SmaCC to transform programs written in your language.  Note that the output from the transformation phase is the text of a program (which may be in the input language or another language) and not a parse tree.
 
 !!! Defining Transformations 
 
-Let's add support for transforming the simple expression ASTs generated from our calculator example.  
-The basic idea is to define ''patterns'' that match subtrees of the AST, and specify how these subtrees should be re-written.
+Let's add support for transforming the simple expression language of our calculator example.
+The basic idea is to define ''patterns'' that match subtrees of the grammar, and specify how these subtrees should be re-written.
 
 We start by extending our grammar with two additional lines. 
 
-- The first line defines how we will write a pattern in our grammar.  SmaCC doesn't have a built-in pattern syntax, because whatever SmaCC were to choose might conflict with the syntax of your language.  Instead, your grammar should define the ==<patternToken>==: SmaCC uses this regular expression as the definition of a pattern. For our example language, we will define a pattern as anything enclosed by ==`== characters (e.g., ==`pattern`==).  This same choice would work for any language that does not use ==`== frequently in its syntax.
-- The second line we need to add tells SmaCC to generate a GLR parser (==%glr;==). This allows SmaCC to parse all possible representations of a pattern expression. 
+- The first line defines how we will write a pattern in our grammar.  SmaCC doesn't have a built-in pattern syntax, because whatever SmaCC were to choose might conflict with the syntax of your language.  Instead, your scanner should define the ==<patternToken>==: SmaCC uses this regular expression as the definition of a pattern. For our example language, we will define a pattern as anything enclosed by ==`== characters (e.g., ==`pattern`==).  This same choice would work for any language that does not use ==`== frequently in its syntax.
+- The second line we need to add tells SmaCC to generate a GLR parser (==%glr;==). This allows SmaCC to parse ''all possible'' representations of a pattern expression, rather than just one.
 
-Here is our grammar with those two additional lines:
+Here is our grammar with these two additions.
 
 [[[
 	<number> : [0-9]+ (\. [0-9]*) ? ;
@@ -57,13 +55,13 @@ Here is our grammar with those two additional lines:
 
 !!! Pattern matching expressions
 
-Having made these changes, we can now define ''re-write rules'' that specify how certain subtrees in the AST should be replaced by other subtrees.  To do this, we modify our grammar by adding some pattern-matching expressions. Pattern-matching expressions look like normal expressions, but may include patterns that are surrounded by the back quote, ==`==, character. 
+Having made these changes, we can now define ''re-write rules'' that specify how certain subtrees in the parse tree should be replaced by other subtrees.  To do this, we modify our grammar by adding some pattern-matching expressions. Pattern-matching expressions look like normal expressions, but may include patterns that are surrounded by the ==<patternToken>==, i.e., the back quote, ==`==, character.
 
 For example, ==`a` \+ 1== is a pattern-matching expression that matches any expression followed by ==\+ 1==.
 
-Once the pattern has matched a subtree, we transform it into a new subtree.  To do this, we supply a replacement expression that uses the pattern variables from the match. Replacement expressions are strings that can contain back-quoted variables. These back-quoted variables are replaced with the appropriate subtree from the pattern. 
+Once the pattern has matched a subtree, we transform it into a new expression that uses the pattern variables from the match. Replacement expressions are strings that can contain back-quoted pattern variables. These back quoted variables are replaced with the corresponding source code that they matched.
 
-For example, if we are searching for the pattern ==`a` \+ 1==, we can supply a replacement expression like ==1 \+ `a`==. This pattern will match ==(3 \+ 4) \+ 1==. When we perform the replacement we take the literal ==1 \+ == part of the string and append the value of the subtree that matched ==`a`==. In this case, we would append ==(3 \+ 4)== to give us ==1 \+ (3 \+ 4)==.
+For example, if we are searching for the pattern ==`a` \+ 1==, we can supply a replacement expression like ==1 \+ `a`==. This pattern will match ==(3 \+ 4) \+ 1==. When we perform the replacement we take the literal ==1 \+ == part of the string and append the source that was parsed into the subtree that matched ==`a`==. In this case, this is ==(3 \+ 4)==, so the replacement text will be ==1 \+ (3 \+ 4)==.
 
 !!! Example
 As an example, let's rewrite addition expressions into reverse Polish notation. Our search pattern is ==`a` \+ `b`== and our replacement expression is ==`a` `b` \+==.
@@ -106,7 +104,7 @@ Here's the same example, using SmaCC's special rewrite syntax.
 
 
 !!! Parametrizing Transformations
-Let's extend our RPN rewriter to support other expressions besides addition. We could do that by providing rewrites for all possible operators (\+, -, \*, /, ^), but it would be better if we could do it with a pattern. You might think that we could use ==`a` `op` `b`==, but the pattern ==`op`== will match only AST nodes, and not tokens like ==(\+)==. We can tell SmaCC to match tokens by using ==`a` `op{beToken}` `b`==. Here's the rewrite expression that works for all expressions:
+Let's extend our RPN rewriter to support other expressions besides addition. We could do that by providing rewrites for all possible operators (\+, -, \*, /, ^), but it would be better if we could do it with a pattern. You might think that we could use ==`a` `op` `b`==, but patterns like ==`op`== will match only expressions corresponding to grammar non-terminals, and not tokens like ==(\+)==. We can tell SmaCC to allow ==`op`== to  match tokens by using ==`a` `op{beToken}` `b`==. Here's the rewrite that works for all arithmetic expressions of the calculator language.
 
 [[[
 	Parser: CalculatorParser
@@ -115,4 +113,25 @@ Let's extend our RPN rewriter to support other expressions besides addition. We 
 	\>\>\>`a` `b` `op`\<\<\<
 ]]]
 
-If we transform ==(3 \+ 4) \* (5 - 2) ^ 3==, we'll get ==3 4 \+ 5 2 - 3 ^ \*==.
+If we transform ==(3 \+ 4) \* (5 - 2) ^ 3==, we'll get ==3 4 \+ 5 2 - 3 ^ \*==.   Notice that SmaCC has performed three transformations using the same pattern-matching rule.
+
+!!! Restrictions and Limitations
+
+At present, SmaCC's rewriting facility can generate only text, not parse trees.
+In other words, although you can and should think of SmaCC's re-writes as matching a parse tree,
+they can't produce a modified parse tree, only modified source code.
+
+To find all possible matches for a pattern expression, the GLR parser performs multiple parses in parallel.
+No individual parse backtracks, but when switching between parses the scanner may backtrack.
+To support this, the scanner implements the methods ==currentState== (which
+reifies the scanner's state into an object) and ==restoreState:== (which expects as its parameter an object produced by ==currentState==).
+If you have added instance variables to yoru scanner, then you will need to override these two methods
+to save and restore your instance variables.
+
+If you have overlapping tokens, and have overriden the method ==tryAllTokens== to return ==true==,
+then in a GLR parser, SmaCC will try to perform a separate parse with each possible interpretation of the token.
+In this case, SmaCC may defer a parser action until it has decided which interpretation to persue.
+Normally, this deferral won't be noticable, but if the parser actions affect the scanner state,
+the scanner's behaviour will be changed.  This is likely to happen if your scanner has multiple states, as
+discussed in the section on ''multiple scanner states''.
+
