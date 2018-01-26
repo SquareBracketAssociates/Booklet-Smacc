@@ -1,18 +1,18 @@
 !! SmaCC Transformations
 
-Once you have generated your AST using SmaCC, you may want to use SmaCC's built-in tools to transform the AST.
-For example, transforming the AST may make it easier to generate code. 
+If you want to get a parser for a language, you might also want the SmaCC Rewrite Engine.
+This engine helps you perform large program transformations based on node pattern matching and rewriting.
 
 
 !!! Defining Transformations 
 
-Let's add support for transforming the simple expression ASTs generated from our calculator example.  
+Let's add support for transforming the simple expression generated from our calculator example.  
 The basic idea is to define ''patterns'' that match subtrees of the AST, and specify how these subtrees should be re-written.
 
 We start by extending our grammar with two additional lines. 
 
-- The first line defines how we will write a pattern in our grammar.  SmaCC doesn't have a built-in pattern syntax, because whatever SmaCC were to choose might conflict with the syntax of your language.  Instead, your grammar should define the ==<patternToken>==: SmaCC uses this regular expression as the definition of a pattern. For our example language, we will define a pattern as anything enclosed by ==`== characters (e.g., ==`pattern`==).  This same choice would work for any language that does not use ==`== frequently in its syntax.
-- The second line we need to add tells SmaCC to generate a GLR parser (==%glr;==). This allows SmaCC to parse all possible representations of a pattern expression. 
+- The first line defines how we will write a pattern in our grammar. SmaCC pattern matching works with metavariable, meaning the pattern will look like any other program in the language except for metavariables that will hold the matching subtree. To use metavariables, your grammar should define a new token ==<patternToken>==. For our example language, we will define a pattern as anything enclosed by ==`== characters (e.g., ==`myMetavariable`==). Note that this token, despite having a special behaviour, is still valid in parser and thus should not conflict with other token definitions. If you language makes active use of the ==`== character, another should be chosen for the ==<patternToken>==.
+- The second line we need to add tells SmaCC to generate a GLR parser (==%glr;==). The mechanism that allow SmaCC to parse all possible representations of a pattern expression is based on GLR parsing. 
 
 Here is our grammar with those two additional lines:
 
@@ -42,7 +42,8 @@ Here is our grammar with those two additional lines:
 		| "(" Expression ")" {{}}
 		| Number
 		| Function;
-	Number : <number> {{Number}};
+	Number
+        : <number> {{Number}};
 	Function
 		: <name> "(" 'leftParen' _Arguments ")" 'rightParen' {{}};
 	_Arguments
@@ -53,15 +54,20 @@ Here is our grammar with those two additional lines:
 		| Arguments "," Expression 'argument';
 ]]]
 
+And that is the only two things you need to do to activate the Rewrite Engine for your new language.
 
 
 !!! Pattern matching expressions
 
-Having made these changes, we can now define ''re-write rules'' that specify how certain subtrees in the AST should be replaced by other subtrees.  To do this, we modify our grammar by adding some pattern-matching expressions. Pattern-matching expressions look like normal expressions, but may include patterns that are surrounded by the back quote, ==`==, character. 
+Having made these changes, we can now define ''rewrite rules'' that specify how certain subtrees in the AST should be matched (the pattern) and how their subtrings should be replaced (the transformation). 
+Pattern look like normal expressions, but may include metavariables that are represented by the ==<patternToken>==. 
 
-For example, ==`a` \+ 1== is a pattern-matching expression that matches any expression followed by ==\+ 1==.
+For example, ==`a` \+ 1== is a pattern that matches any expression followed by ==\+ 1==.
 
-Once the pattern has matched a subtree, we transform it into a new subtree.  To do this, we supply a replacement expression that uses the pattern variables from the match. Replacement expressions are strings that can contain back-quoted variables. These back-quoted variables are replaced with the appropriate subtree from the pattern. 
+To rewrite the matches of the pattern in our program, we must supply a transformation.
+The transformation part of the rewrite rule can contain the metavariables present in the pattern.
+A crucial distinction is that the metavariables are now instanciated to their matched subtree.
+After the transformation, a new string is returned with the program appropriately rewritten where the pattern matched.  
 
 For example, if we are searching for the pattern ==`a` \+ 1==, we can supply a replacement expression like ==1 \+ `a`==. This pattern will match ==(3 \+ 4) \+ 1==. When we perform the replacement we take the literal ==1 \+ == part of the string and append the value of the subtree that matched ==`a`==. In this case, we would append ==(3 \+ 4)== to give us ==1 \+ (3 \+ 4)==.
 
@@ -90,7 +96,7 @@ As an example, let's rewrite addition expressions into reverse Polish notation. 
 
 This code rewrites ==(3 \+ 4) \+ (4 \+ 3)== in RPN format and returns ==3 4 \+ 4 3 \+ \+==. The first match that this finds is ==`a`== = ==(3 \+ 4)== and ==`b`== = ==(4 \+ 3)==. Inside our replacement expression, we refer to ==`a`== and ==`b`==, so we first process those expression for more transformations. Since both contain other addition expressions, we rewrite both expressions to get ==`a`== = ==3 4 \+== and ==`b`== = ==4 3 \+==.
 
-Here's the same example, using SmaCC's special rewrite syntax.
+Here's the same example, using SmaCC's special, albeit small rewrite syntax.
 
 [[[
 	| rewriter rewriteExpression |
@@ -116,3 +122,7 @@ Let's extend our RPN rewriter to support other expressions besides addition. We 
 ]]]
 
 If we transform ==(3 \+ 4) \* (5 - 2) ^ 3==, we'll get ==3 4 \+ 5 2 - 3 ^ \*==.
+
+
+
+
