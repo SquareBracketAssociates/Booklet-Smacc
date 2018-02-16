@@ -59,14 +59,14 @@ And that is the only two things you need to do to activate the Rewrite Engine fo
 !!! Pattern matching expressions
 
 Having made these changes, we can now define ''rewrite rules'' that specify how certain subtrees in the AST should be matched (the pattern) and how their subtrings should be replaced (the transformation). 
-Pattern look like normal expressions, but may include metavariables that are represented by the ==<patternToken>==. 
+Patterns look like normal code from your language, but may include metavariables that are represented by the ==<patternToken>==. 
 
 For example, ==`a` \+ 1== is a pattern that matches any expression followed by ==\+ 1==.
 
 To rewrite the matches of the pattern in our program, we must supply a transformation.
 The transformation part of the rewrite rule can contain the metavariables present in the pattern.
-A crucial distinction is that the metavariables are now instanciated to their matched subtree.
-After the transformation, a new string is returned with the program appropriately rewritten where the pattern was matched.  
+A crucial distinction is that after the matching part, the metavariables are now instanciated with their matched subtree.
+The transformation part modifies those metavariables which are then replaced in the transformed code.
 
 For example, if we are searching for the pattern ==`a` \+ 1==, we can supply a replacement expression like ==1 \+ `a`==. This pattern will match ==(3 \+ 4) \+ 1==. When we perform the replacement we take the literal ==1 \+ == part of the string and append the source that was parsed into the subtree that matched ==`a`==. In this case, this is ==(3 \+ 4)==, so the replacement text will be ==1 \+ (3 \+ 4)==.
 
@@ -109,15 +109,17 @@ Here's the same example, using SmaCC's special, albeit small rewrite syntax.
 	rewriter rewriteTree: (CalculatorParser parse: '(3 + 4) + (4 + 3)')
 ]]]
 
+Note that when you use the same name for multiple metavariables in a pattern, all of these must be equals.
+As an example ==`i` + `i`== will only match addition for which the two operands are the same nodes.
 
 !!! Parametrizing Transformations
 Let's extend our RPN rewriter to support other expressions besides addition. We could do that by providing rewrites for all possible operators (\+, -, \*, /, ^), but it would be better if we could do it with a pattern. You might think that we could use ==`a` `op` `b`==, but patterns like ==`op`== will match only expressions corresponding to grammar non-terminals, and not tokens like ==(\+)==. We can tell SmaCC to allow ==`op`== to  match tokens by using ==`a` `op{beToken}` `b`==. Here's the rewrite that works for all arithmetic expressions of the calculator language.
 
 [[[
 	Parser: CalculatorParser
-	\>\>\>`a` `op{beToken}` `b`\<\<\<
+	>>>`a` `op{beToken}` `b`<<<
 	->
-	\>\>\>`a` `b` `op`\<\<\<
+	>>>`a` `b` `op`<<<
 ]]]
 
 If we transform ==(3 \+ 4) \* (5 - 2) ^ 3==, we'll get ==3 4 \+ 5 2 - 3 ^ \*==.   Notice that SmaCC has performed three transformations using the same pattern-matching rule.
@@ -128,19 +130,4 @@ At present, SmaCC's rewriting facility can generate only text, not parse trees.
 In other words, although you can and should think of SmaCC's rewrites as matching a parse tree,
 they cannot produce a modified parse tree, only modified source code.
 
-To find all possible matches for a pattern expression, the GLR parser performs multiple parses in parallel.
-No individual parse backtracks, but when switching between parses the scanner may backtrack.
-To support this, the scanner implements the methods ==currentState== (which
-reifies the scanner's state into an object) and ==restoreState:== (which expects as its parameter an object produced by ==currentState==).
-If you have added instance variables to yoru scanner, then you will need to override these two methods
-to save and restore your instance variables.
-The same is true for the parser that you can save and restore using the ==duplicateState== and ==restoreState:== respectively.
-Be sure to override those methods if you have special instance variables in your parser.
-
-If you have overlapping tokens, and have overriden the method ==tryAllTokens== to return ==true==,
-then in a GLR parser, SmaCC will try to perform a separate parse with each possible interpretation of the token.
-In this case, SmaCC may defer a parser action until it has decided which interpretation to persue.
-Normally, this deferral won't be noticable, but if the parser actions affect the scanner state,
-the scanner's behaviour will be changed.  This is likely to happen if your scanner has multiple states, as
-discussed in the section on ''multiple scanner states''.
 

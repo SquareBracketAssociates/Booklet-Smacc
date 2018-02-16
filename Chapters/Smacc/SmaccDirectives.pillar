@@ -77,6 +77,21 @@ SmaCC allows you to parse ambiguous grammars using a GLR parser. The ==%glr;== d
 
 If you parse a string that has multiple representations, SmaCC will throw a ==SmaCCAmbiguousResultNotification== exception, which can be handled by user code. This exception has the potential parses. The value with which it is resumed with will be selected as the definitive parse value. If the exception is not handled, then SmaCC will pick one as the definitive parse value.
 
+To handle all the ambiguities of a program, the GLR parser performs multiple parses in parallel.    
+No individual parse backtracks, but when switching between parses the scanner may backtrack.                   
+To support this, the scanner implements the methods ==currentState== (which                                    
+reifies the scanner's state into an object) and ==restoreState:== (which expects as its parameter an object produced by ==currentState==).
+If you have added instance variables to your scanner, then you will need to override these two methods         
+to save and restore your instance variables.                                                                   
+The same is true for the parser that you can save and restore using the ==duplicateState== and ==restoreState:== respectively.
+Be sure to override those methods if you have special instance variables in your parser.                       
+                                                                                                               
+If you have overlapping tokens, and have overriden the method ==tryAllTokens== to return ==true==,
+then in a GLR parser, SmaCC will try to perform a separate parse with each possible interpretation of the token.
+In this case, SmaCC may defer a parser action until it has decided which interpretation to persue.
+Normally, this deferral won't be noticable, but if the parser actions affect the scanner state,                
+the scanner's behaviour will be changed.  This is likely to happen if your scanner has multiple states.
+
 
 !!!AST Directives
 
