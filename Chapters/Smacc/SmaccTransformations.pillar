@@ -58,15 +58,15 @@ And that is the only two things you need to do to activate the Rewrite Engine fo
 
 !!! Pattern matching expressions
 
-Having made these changes, we can now define ''rewrite rules'' that specify how certain subtrees in the AST should be matched (the pattern) and how their subtrings should be replaced (the transformation). 
-Patterns look like normal code from your language, but may include metavariables that are represented by the ==<patternToken>==. 
+Having made these changes, we can now define ''rewrite rules'' that specify how certain subtrees in the AST should be matched (the pattern) and how their substrings should be replaced (the transformation). 
+Patterns look like normal code from your language, but may include metavariables that are delimited by the ==<patternToken>==. 
 
-For example, ==`a` \+ 1== is a pattern that matches any expression followed by ==\+ 1==.
+For example, ==`a` \+ 1== is a pattern that matches any expression followed by ==\+ 1==. 
+The metavariable is ==a==; when the pattern matches, ==a== will be bound to the AST node of the expression that is followed by ==\+1==.
 
-To rewrite the matches of the pattern in our program, we must supply a transformation.
-The transformation part of the rewrite rule can contain the metavariables present in the pattern.
-A crucial distinction is that after the matching part, the metavariables are now instanciated with their matched subtree.
-The transformation part modifies those metavariables which are then replaced in the transformed code.
+To rewrite the matches of the pattern in our program, we must supply a transformation, which can contain the metavariables present in the pattern.
+A crucial distinction is that the metavariables are now instantiated to the source string corresponding to their matched subtree.
+After the transformation, a new string is returned with the program appropriately rewritten where the pattern was matched.  
 
 For example, if we are searching for the pattern ==`a` \+ 1==, we can supply a replacement expression like ==1 \+ `a`==. This pattern will match ==(3 \+ 4) \+ 1==. When we perform the replacement we take the literal ==1 \+ == part of the string and append the source that was parsed into the subtree that matched ==`a`==. In this case, this is ==(3 \+ 4)==, so the replacement text will be ==1 \+ (3 \+ 4)==.
 
@@ -129,5 +129,4 @@ If we transform ==(3 \+ 4) \* (5 - 2) ^ 3==, we'll get ==3 4 \+ 5 2 - 3 ^ \*==. 
 At present, SmaCC's rewriting facility can generate only text, not parse trees.
 In other words, although you can and should think of SmaCC's rewrites as matching a parse tree,
 they cannot produce a modified parse tree, only modified source code.
-
 
