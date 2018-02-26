@@ -1,0 +1,101 @@
+!! Advanced Features of SmaCC
+
+This chapter addresses the problem of parsing a language with two interesting features:
+string interpolations and indentation.
+SmaCC can handle both, but doing so requires that we use some more advanced techniques.
+To deal with string interpolations we will use a scanner with multiple states;
+to deal with indentation will will add some custom token actions to the scanner.
+Lets look at these techniques one at a time.
+
+!!! Multi-state Scanners
+
+To motivate the need for a multi-state scanner, let's look at a feature of the Grace
+programming language: string interpolations.
+Similar features are available in many other languages, including JavaScript and Scala.
+
+In Grace, a ==StringLiteral== is a sequence of characters enclosed by double quotes;
+a ==StringConstructor== is like a string literal, but can also contain Grace expressions
+surrounded by braces.  Here is an example.
+[[[
+"the value of count is {count}."
+]]]
+
+The value of this string is determined by evaluating the variable ==count==, converting the answer to a string (by sending it the ==asString== message), and interpolating the resulting string in place of the brace expression.
+So, if ==count== is ==19==, the final value of the constructed string will be
+[[[
+"the value of count is 19."
+]]]
+
+If the expressions between braces were restricted to simple identifiers, this would pose no problem for the scanner, but the Grace language allows arbitrary code to appear between the braces.  Such code can contain matched string quotes and matched pairs of braces.
+(In Grace, outside of strings, braces are used to enclose blocks, i.e., they mean roughly the same as brackets in Smalltalk.)
+
+If you remember your formal language theory, you will know that the language of properly nested parentheses is not regular.
+So we cannot write simple regular expressions in the scanner that will correctly tokenize this language; in essence, the problem is that a regular expression, (or, more precisely, the finite state automaton that recognizes the language defined by that expression) can't maintain an unbounded counter.  What should we do?
+
+SmaCC lets us solve this problem by building a scanner with two separate "states": a special state for scanning strings, and a default state for the rest of the language.  We declare the ==string== state as follows:
+[[[
+%states string
+]]]
+
+The default state does not need to be declared explicitly.
+
+Scanner rules prefixed with the name of a state operate only in that state.  For example:
+
+[[[
+string <stringSegment> : ( [^\"\{\\\x00-\x1F] | \xA0 | \\[nt\{\}\"rl_\\] ) +
+]]]
+defines a ==<stringSegment>== as one or more characters, _excluding_ the double-quote, open-brace, backslash, or any of the control characters between ==0== and hex ==1F==, or the non-breaking space hex ==A0==, or one of the backslash escapes \n, \t, \{, \}, \", \r, \l, \_ and \\.
+However, this definition operates only in the _string_ state, which stops it from matching, for example, identifiers.
+Similarly, identifiers and whitespace are recognized only in the ==default== state (which stops them for matching the content of a string).  We want double-quotes (which delimit strings) to be recognized in both states, so we prefix that rule with both names.
+
+[[[
+default <id> : [a-zA-Z_] [a-zA-Z0-9_'] * ;
+default <whitespace>: ( \x20 | \xA0 ) + ;
+default string <dquote>:  ["] ;
+]]]
+
+What remains is to switch the scanner into the ==string== state when an opening string quote is encountered, and to switch it back to the ==default== state either when it finds either the closing string quote, or an opening brace. How can we achieve this?
+
+One possibility is to write custom token methods in the scanner, which might count opening and closing braces and determine when the brace that closes the interpolation has been found.  But there is a better solution, which takes advantage of the fact that SmaCC does not run the scanner and parser as separate passes.
+Instead, the parser calls the scanner when, and only when, the parser needs the next token.
+
+Here are the parser rules that change the scanner state:
+[[[
+StartString
+    : { self state: #string. ^ nil}
+    ;
+RetDefault
+    : { self state: #default. ^ nil }
+    ;
+]]]
+
+These rules both match the empty input, so they don't actually parse anything;
+their only function is to force parser actions to be executed.
+The non-terminals that they define are used in the rules for ==StringLiteral==
+and ==StringConstructor== (which, for simplicity, are shown without the names for the components, or the parser actions).
+[[[
+StringLiteral
+    : StartString <dquote> <stringSegment> ? RetDefault <dquote>
+    ;
+StringConstructor
+    : StartString <dquote> <stringSegment> ? ( RetDefault "{" Expression StartString "}" <stringSegment> ? ) + RetDefault <dquote>
+    ;
+]]]
+The first rule says that a ==StringLiteral== starts with a ==<dquote>== token, which is followed by an optional ==<stringSegment>==, and a closing ==<dquote>==.
+The initial ==StartString== non-terminal can be thought of as a "call" of the ==StartString== parser action, which,
+as we saw above, sets the scanner state to ==string==.
+This action won't be executed until _after_ the next token (==<dquote>==) is scanned, but when ==<stringSegment>== is scanned,
+the scanner will be in state ==string==, and thus the scanner rule for ==<stringSegment>== will be applied.
+Similarly, after the end of the ==<stringSegment>==, the ==RetDefault== action will return the scanner to the _default_ state.
+This won't happen until _after_ the ==<dquote>== is scanned, but since the rule for ==<dquote> is valid in both the default state and the string state, that's OK.
+
+The rule for ==StringConstructor== is a bit more complicated, and it's for this one that we really need multiple states.
+This rule allows multiple interpolations enclosed between braces, but the ==RetDefault== production is used to return the scanner to the _default_ state before each opening brace, and then the ==StartString== production is used to change it to the _string_ state at the closing brace that marks the end of the interpolation.
+Once again, because of the way that the parser works, there is a one token "delay" before the state-change takes effect.
+This is because the parser won't execute an action until the _next_ token has been read, and the parser has determined that a reduce action is appropriate.
+
+The overall effect is as if there were two different scanners: one for strings, and one for the rest of the source program.
+The appropriate scanner is used for each part of the input, without further effort.
+
+!!! Indentation-Sensitive Parsing
+

@@ -12,6 +12,8 @@ ${inputFile:Chapters/Smacc/SmaccDirectives.pillar}$
 
 ${inputFile:Chapters/Smacc/SmaccAST.pillar}$
 
+${inputFile:Chapters/Smacc/SmaccAdvanced.pillar}$
+
 ${inputFile:Chapters/Smacc/SmaccTransformations.pillar}$
 
 ${inputFile:Chapters/Smacc/SmaccIdioms.pillar}$
