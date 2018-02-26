@@ -34,7 +34,7 @@ So we cannot write simple regular expressions in the scanner that will correctly
 
 SmaCC lets us solve this problem by building a scanner with two separate "states": a special state for scanning strings, and a default state for the rest of the language.  We declare the ==string== state as follows:
 [[[
-%states string
+%states string ;
 ]]]
 
 The default state does not need to be declared explicitly.
@@ -42,10 +42,10 @@ The default state does not need to be declared explicitly.
 Scanner rules prefixed with the name of a state operate only in that state.  For example:
 
 [[[
-string <stringSegment> : ( [^\"\{\\\x00-\x1F] | \xA0 | \\[nt\{\}\"rl_\\] ) +
+string <stringSegment> : ( [^\"\{\\\x00-\x1F] | \xA0 | \\[nt\{\}\"rl_\\] ) + ;
 ]]]
-defines a ==<stringSegment>== as one or more characters, _excluding_ the double-quote, open-brace, backslash, or any of the control characters between ==0== and hex ==1F==, or the non-breaking space hex ==A0==, or one of the backslash escapes \n, \t, \{, \}, \", \r, \l, \_ and \\.
-However, this definition operates only in the _string_ state, which stops it from matching, for example, identifiers.
+defines a ==<stringSegment>== as one or more characters, ''excluding'' the double-quote, open-brace, backslash, or any of the control characters between ==0== and hex ==1F==, or the non-breaking space hex ==A0==, or one of the backslash escapes \n, \t, \{, \}, \", \r, \l, \_ and \\.
+However, this definition operates only in the ''string'' state, which stops it from matching, for example, identifiers.
 Similarly, identifiers and whitespace are recognized only in the ==default== state (which stops them for matching the content of a string).  We want double-quotes (which delimit strings) to be recognized in both states, so we prefix that rule with both names.
 
 [[[
@@ -84,15 +84,15 @@ StringConstructor
 The first rule says that a ==StringLiteral== starts with a ==<dquote>== token, which is followed by an optional ==<stringSegment>==, and a closing ==<dquote>==.
 The initial ==StartString== non-terminal can be thought of as a "call" of the ==StartString== parser action, which,
 as we saw above, sets the scanner state to ==string==.
-This action won't be executed until _after_ the next token (==<dquote>==) is scanned, but when ==<stringSegment>== is scanned,
+This action won't be executed until ''after'' the next token (==<dquote>==) is scanned, but when ==<stringSegment>== is scanned,
 the scanner will be in state ==string==, and thus the scanner rule for ==<stringSegment>== will be applied.
-Similarly, after the end of the ==<stringSegment>==, the ==RetDefault== action will return the scanner to the _default_ state.
-This won't happen until _after_ the ==<dquote>== is scanned, but since the rule for ==<dquote> is valid in both the default state and the string state, that's OK.
+Similarly, after the end of the ==<stringSegment>==, the ==RetDefault== action will return the scanner to the ''default'' state.
+This won't happen until ''after'' the ==<dquote>== is scanned, but since the rule for ==<dquote>== is valid in both the default state and the string state, that's OK.
 
 The rule for ==StringConstructor== is a bit more complicated, and it's for this one that we really need multiple states.
-This rule allows multiple interpolations enclosed between braces, but the ==RetDefault== production is used to return the scanner to the _default_ state before each opening brace, and then the ==StartString== production is used to change it to the _string_ state at the closing brace that marks the end of the interpolation.
+This rule allows multiple interpolations enclosed between braces, but the ==RetDefault== production is used to return the scanner to the ''default'' state before each opening brace, and then the ==StartString== production is used to change it to the ''string'' state at the closing brace that marks the end of the interpolation.
 Once again, because of the way that the parser works, there is a one token "delay" before the state-change takes effect.
-This is because the parser won't execute an action until the _next_ token has been read, and the parser has determined that a reduce action is appropriate.
+This is because the parser won't execute an action until the ''next'' token has been read, and the parser has determined that a reduce action is appropriate.
 
 The overall effect is as if there were two different scanners: one for strings, and one for the rest of the source program.
 The appropriate scanner is used for each part of the input, without further effort.
