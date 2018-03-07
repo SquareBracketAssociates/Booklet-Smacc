@@ -89,8 +89,8 @@ Be sure to override those methods if you have special instance variables in your
 If you have overlapping tokens, and have overridden the method ==tryAllTokens== to return ==true==,
 then in a GLR parser, SmaCC will try to perform a separate parse with each possible interpretation of the token.
 In this case, SmaCC may defer a parser action until it has decided which interpretation to pursue.
-Normally, this deferral won't be noticeable, but if the parser actions affect the scanner state,                
-the scanner's behaviour will be changed.  This is likely to happen if your scanner has multiple states.
+Normally, this deferral won't be noticeable, but if the parser actions affect the scanner state, the scanner's behaviour will be changed.
+This is likely to happen if your scanner has multiple states.
 
 
 !!!AST Directives
