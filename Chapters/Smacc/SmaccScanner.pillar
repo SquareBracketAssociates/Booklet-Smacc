@@ -140,3 +140,43 @@ If a token is not referenced from a grammar specification, it will not be includ
 
 SmaCC compiles the scanner into a bunch of conditional tests on characters. Normally, it assumes that characters have values between 0 and 255, and it can make some optimizations based on this fact. With the directive ==%unicode== in the input, SmaCC will assume that characters have values between 0 and 65535.  Unicode characters outside that range are not at present handled, and SmaCC
 is significantly slower with this option activated.
+
+!!!Scanner States
+
+Scanner states (or scopes) are a way to restrict tokens to specific scopes.
+A token can exist in multiple scopes (even all of them).
+This feature is especially useful when you have a set of tokens that should only be matched in a certain part of the grammar. 
+
+To illustrate states, let's take the example of string interpolation where you want to be able to put arbitrary expressions in strings and they will be interpolated as string and concatenated with the rest.
+To parse =="A nice addition: {3+4}"== correctly, the part between curly braces should be an expression.
+Instead of parsing it as a string and postponing the treatment to later on, you can use scanner states to only allow certain tokens in certain states.
+Here is a sample example of a grammar for string interpolation:
+
+[[[
+%states default string;
+
+string <any_string>: [^"{}]+;
+<dquote>: ["];
+
+String
+    : ToString <dquote> <any_string>? (ToDefault "{" Expression ToString "}" <any_string>?)* ToDefault <dquote> 
+    ;
+
+ToDefault
+    : {self state: #default. ^ nil}
+    ;
+
+ToString
+    : {self state: #string. ^ nil}
+    ;
+
+Expression
+    ...
+]]]
+
+As you can see, changing state involves accessing the parser in a semantic action.
+The starting parser state for all parsers is ==#default==. 
+When the state change is executed, the lookahead is already processed in the previous state.
+So be careful to change state one token before the "logical" swap.
+
+
