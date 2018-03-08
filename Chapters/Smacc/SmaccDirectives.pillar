@@ -89,8 +89,8 @@ Be sure to override those methods if you have special instance variables in your
 If you have overlapping tokens, and have overridden the method ==tryAllTokens== to return ==true==,
 then in a GLR parser, SmaCC will try to perform a separate parse with each possible interpretation of the token.
 In this case, SmaCC may defer a parser action until it has decided which interpretation to pursue.
-Normally, this deferral won't be noticeable, but if the parser actions affect the scanner state,                
-the scanner's behaviour will be changed.  This is likely to happen if your scanner has multiple states.
+Normally, this deferral won't be noticeable, but if the parser actions affect the scanner state, the scanner's behaviour will be changed.
+This is likely to happen if your scanner has multiple states.
 
 
 !!!AST Directives
@@ -122,5 +122,7 @@ Unnamed symbol in production. Without a variable name the value will be dropped 
 
       With the directive, a variable name will be auto-generated, using the name of the symbol follwed by ==Token==.  So the symbol ==<op>== would be given the name ==<opToken>==.
 
-- The ==%attributes== directive allows you to add some unused instance variables to your classes.  This enables you to later extend the generated classes to use those variables. The first argument to the ==%attributes== directive is the class name; the second argument is a parenthesised list of variable names. For example, we could add an instance variable ==cachedValue== to the ==Expression== class with ==%attributes Expression (cachedValue);==.
+- The ==%attributes== directive allows you to add some extra instance variables to your classes.  This enables you to later extend the generated classes to use those variables. The first argument to the ==%attributes== directive is the class name (without the prefix and suffix); the second argument is a parenthesised list of variable names. For example, we could add an instance variable ==cachedValue== to the ==Expression== class with ==%attributes Expression (cachedValue);==.
+Note that if you don't use this directive, but simply add the instance variables to the classes by hand, SmaCC will remove them the next time that the classes are re-generated.
+Then your instance variables will become undeclared, and any code that uses them will start to behave strangely.  This can be the explanation for unexplained and inconsistent behaviour.
 - The final instance variable directive is ==%ignore_variables==. When SmaCC creates the AST node classes, it automatically generates appropriate ==\=== and ==hash== methods. By default, these methods use all instance variables when comparing for equality and computing the hash. The ==%ignore_variables== directive allows you to specify that certain variables should be ignored. For example, you may wish to ignore parentheses when you compare expressions. If you named your ==(== token 'leftParen' and your ==)== token 'rightParen', then you can specify this with ==%ignore_variables leftParen rightParen;==.
