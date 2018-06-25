@@ -333,6 +333,7 @@ calculateCurrentIndent
 	^ str size - str position
 ]]]
 The Grace language specification says that a line feed following a carriage return is ignored, so we are careful not to include it when we calculate the indentation.
+It should also be possible to use the character position reported by ==SmaCCLineNumberStream== to calculate the current indent.
 
 
 
@@ -350,7 +351,7 @@ the end of the continuation is signalled by a return to the previous indentation
 
 Dealing with continuations requires another scanner state variable ==indentOfLineBeingContinued==.
 This variable is ==nil== if no line is being continued.
-Another variable, ==maxIndentOfContinuation== tracks the maximum indentation of the continuation.
+Another variable, ==maxIndentOfContinuation==, tracks the maximum indentation of the continuation.
 
 
 !!!!Ignoring Blank Lines
@@ -378,4 +379,8 @@ The second line returns early with ==false== if the first non-space character is
 The remaining case is where the first non-space character ''is'' ==/==; we need to see if it is followed by a second ==/==, indicating a comment, or by some other character, in which case the initial ==/== was an operator symbol.
 To do this we use ==explore:== on stream, the scanner instance variable that names the inout stream.
 ==explore: withABlock== saves the position of the stream, evaluate the code ==withABlock==, and then resets the stream to the saved position.  The method ==explore:== is implemented in the wrapper class ==SmaCCLineNumberStream==, but it is only as good as the ==position:== method in the underlying stream.
-Currently, there are some issues with ==position:== on Multiple Byte streams; the workaround is to read the whole stream into a string, and then create a stream on the string.
+Currently, there are some issues with ==position:== on streams that contain multiple-byte characters; the workaround is to read the whole stream into a string, and then create a stream on the string.
+
+!!!!The Rest of the Story
+If you wish to see all the details, the code for the Grace parser is available on [githib](https://github.com/apblack/GraceInPharo.git).
+
