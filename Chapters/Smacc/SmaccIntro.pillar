@@ -17,7 +17,7 @@ for example, it supports the automatic conversion from Delphi to C\#.
 
 !!! Obtaining SmaCC
  
-If you haven't already done so, you will need to load Smacc.  Execute this code in a Pharo playground:
+If you haven't already done so, you will need to load SmaCC.  Execute this code in a Pharo playground:
 
 [[[
 Metacello new
@@ -28,7 +28,7 @@ Metacello new
  
  
 Note that there is another version of SmaCC that is now part of Moose *http://moosetechnology.com*.
-The difference between them is that the Moose version uses different tools to load the parser and scanner, and incorporates a special debugger. In addition, the Moose version does not support the parser shortcuts described in the *Section "Shortcuts">@shortcuts*. In the future, we hope that these versions will be unified.
+The difference between them is that the Moose version uses different tools to load the parser and scanner. In addition, the Moose version does not support the parser shortcuts described in the *Section "Shortcuts">@shortcuts*. In the future, we hope that these versions will be unified.
 
 !!! Basics
 
