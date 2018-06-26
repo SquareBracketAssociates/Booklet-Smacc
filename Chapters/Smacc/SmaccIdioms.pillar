@@ -1,5 +1,5 @@
 !! Grammar Idioms
-@idioms
+@cha:idioms
 
 In this chapter, we share some coding idioms for grammars that help create more
 compact ASTs.
