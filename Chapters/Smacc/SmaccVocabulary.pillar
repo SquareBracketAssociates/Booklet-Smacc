@@ -31,20 +31,23 @@ Number
 	;
 ]]]
 
-!!! Grammar structure
+!!! Metagrammar structure
 
-It is composed of 
+SmaCC grammars are written in EBNF format (Extended Backus-Naur Form) with a syntax
+ressembling closely the one from GNU Bison.
+A grammar is composed of: 
 
-- Scanner part: all rules starting with <>
-- Directive part: all lines starting with ==%==
-- Parser part: the rest
+- Scanner rules: they define tokens to recognize in the input stream through regex,
+- Parser rules: they define the production rules of your grammar,
+- Directives: they are additionnal information for the parsing or for the AST generation.
 
+Note that you can also find the metagrammar of SmaCC described in itself in the ==SmaCCDefinitionParser==.
 
 !!!! Elements 
 
 !!!! Production rule
 
-The following expressions define two production rules 
+The following expressions define two production rules. 
 
 [[[
 Expression 
@@ -57,28 +60,32 @@ Number
 	;
 ]]] 
 
-A rule group is defined by several production rules.
-
-- Here the first production rule has two production rules.
+A production rule is defined by a left hand side and several alternatives.
+- Here the first production rule has two alternatives.
 - While the seconde production rule has only one. 
 
-A production rule can be composed of
-- non terminal often starting with uppercase
-- scanner token
+An alternative can be composed of any variation of:
+- non terminals often starting with uppercase
+- scanner tokens
 - keywords (delimited by =="==)
-- variables (delimited by =='==)
-- and action (delimited by =={}==)
 
+In addition, you can use the single curly braces =={}== to define an arbitrary semantic 
+action or the double curly braces =={{}}== to create an AST node instead.
+Non terminals and tokens can be annotated with variable names (delimited by =='==) that
+will be the instance variable names of the AST node.
 
 !!!! Tokens
 
-Tokens are identified by the scanner. A token specification is composed of a token name and a token regular expressions. 
+Tokens are identified by the scanner. 
+A token specification is composed of a token name and a token regular expression.
 
 [[[
 <TokenName>    :    RegularExpression ;
 ]]]
 
-The following token specification describes a number: It starts with one or more digits, possibly followed by an decimal point with zero or more digits after it. The scanner definition for this token is:
+The following token specification describes a number: It starts with one or more digits, 
+possibly followed by a decimal point with zero or more digits after it. 
+The scanner definition for this token is:
 
 [[[
 <number>        :       [0-9]+ (\. [0-9]*) ? ;
@@ -107,7 +114,16 @@ Let's go over each part:
 
 !!!! Keywords
 
-Keywords are defined in the production and delimited by =="==. In the following 
+Keywords are defined in the production and delimited by =="==. 
+Keywords are only defined through static strings, regular expressions cannot be used.
+In the following example, =="+"== and =="-"== are considered keywords.
+
+[[[
+Expression 
+	: Expression 'left' "+" 'operator' Expression 'right' {{Binary}}
+	| Expression 'left' "-" 'operator' Expression 'right' {{Binary}}
+	;
+]]]
 
 !!!! Non Terminal
 
@@ -121,6 +137,6 @@ Variables give name to one element of a production. For example
 Expression 'left' "^" 'operator' Expression 'right'
 ]]]
 
-- 'left' and 'right' denote the expression matched by the rules
+- 'left' and 'right' denote the first and second expression of the alternative.
 - 'operator' denotes the caret token. 
 

@@ -1,4 +1,5 @@
 !! SmaCC Abstract Syntax Trees
+@AST
 
 SmaCC can generate abstract syntax trees from an annotated grammar. In addition to the node classes to represent the trees, SmaCC also generates a generic visitor for the tree classes. This is handy and boost your productivity especially since we can decide to change the AST form afterwards and get a new one in no time.
 

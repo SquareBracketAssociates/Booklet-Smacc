@@ -1,12 +1,14 @@
 !! A first SmaCC tutorial
 
 This tutorial demonstrates the basic features of SmaCC, the Smalltalk Compiler Compiler. 
-We will use SmaCC to develop a simple calculator. This tutorial was originally developed by Don Roberts and John Brant,
-and later modified by T. Goubier, S. Ducasse and J. Lecerf.
+We will use SmaCC to create a simple calculator. 
+This tutorial was originally developed by Don Roberts and John Brant, and later modified 
+by T. Goubier, S. Ducasse, J. Lecerf and Andrew Black.
 
 
 !!! Opening the tools
-Once you have loaded the code of SmaCC, you should open the SmaCC Parser Generator tool (Figure *@SmaCCGUI*). In Pharo, you can do this using the ''Tools'' submenu of the ''World'' menu.
+Once you have loaded the code of SmaCC, you should open the SmaCC Parser Generator tool (Figure *@SmaCCGUI*). 
+In Pharo, you can do this using the ''Tools'' submenu of the ''World'' menu.
 
 +SmaCC GUI Tool: The place to define the scanner and parser.>file://figures/SmaCCGUI.png|width=80|label=SmaCCGUI+
 
@@ -184,7 +186,12 @@ Number
 
 !!! Handling priority
 
-Here we run into a problem. If you evaluate =='2 \+ 3 \* 4'== you end up with 20. The problem is that in standard arithmetic, multiplication has a higher precedence than addition. Our grammar evaluates strictly left-to-right. The standard solution for this problem is to define additional non-terminals to force the sequence of evaluation. Using that solution, our grammar would look like this.
+Here we run into a problem. 
+If you evaluate =='2 \+ 3 \* 4'== you end up with 20. 
+The problem is that in standard arithmetic, multiplication has a higher precedence than addition. 
+Our grammar evaluates strictly left-to-right. 
+The standard solution for this problem is to define additional non-terminals to force the sequence of evaluation. 
+Using that solution, our grammar would look like this.
 
 [[[
 Expression  
@@ -206,7 +213,9 @@ If you compile this grammar, you will see that =='2 \+ 3 \* 4'== evaluates to ==
 
 !!! Handling priority with directives
 
-As you can imagine, defining additional non-terminals gets pretty complicated as the number of levels of precedence increases. We can use ambiguous grammars and precedence rules to simplify this situation. Here is the same grammar using precedence to enforce our desired evaluation order:
+As you can imagine, defining additional non-terminals gets pretty complicated as the number of levels of precedence increases. 
+We can use ambiguous grammars and precedence rules to simplify this situation. 
+Here is the same grammar using precedence to enforce our desired evaluation order:
 
 [[[
 %left "+" "-";
@@ -224,10 +233,16 @@ Number
 	;
 ]]]
 
-Notice that we changed the grammar so that there are Expressions on both sides of the operator. This makes the grammar ambiguous:
-an expression like =='2 \+ 3 \* 4'== can be parsed in two ways.  This ambiguity is resolved using SmaCC's precedence rules.
+Notice that we changed the grammar so that there are Expressions on both sides of the operator. 
+This makes the grammar ambiguous: an expression like =='2 \+ 3 \* 4'== can be parsed in two ways.  
+This ambiguity is resolved using SmaCC's precedence rules.
 
-The two lines that we added to the top of the grammar mean that ==\+== and ==-== are evaluated left-to-right and have the same precedence. Likewise, the second line means that ==\*== and ==/== are evaluated left-to-right and have equal precedence.  Because the rule for ==\+== and ==-== comes first, ==\+== and ==-== have lower precedence than ==\*== and ==/==.  Grammars using precedence rules are usually much more intuitive, especially in cases with many precedence levels. Just as an example, let's add exponentiation and parentheses. Here is our final grammar:
+The two lines that we added to the top of the grammar mean that ==\+== and ==-== are evaluated left-to-right and have the same precedence. 
+Likewise, the second line means that ==\*== and ==/== are evaluated left-to-right and have equal precedence.
+Because the rule for ==\+== and ==-== comes first, ==\+== and ==-== have lower precedence than ==\*== and ==/==.
+Grammars using precedence rules are usually much more intuitive, especially in cases with many precedence levels.
+Just as an example, let's add exponentiation and parentheses. 
+Here is our final grammar:
 
 [[[
 <number> : [0-9]+ (\. [0-9]*) ? ;
@@ -250,8 +265,11 @@ Number
 	;
 ]]]
 
-Once you have compiled the grammar, you will be able to evaluate ==3 \+ 4 \* 5 ^ 2 ^ 2== to get 2503. Since the exponent operator ==^== is defined to be right associative, this expression is evaluated as ==3 \+ (4 \* (5 ^ (2 ^ 2)))==. We can also evaluate expressions with parentheses. For example, evaluating ==(3 \+ 4) \* (5 - 2) ^ 3== results in 189.
+Once you have compiled the grammar, you will be able to evaluate ==3 \+ 4 \* 5 ^ 2 ^ 2== to get 2503.
+Since the exponent operator ==^== is defined to be right associative, this expression is evaluated as ==3 \+ (4 \* (5 ^ (2 ^ 2)))==.
+We can also evaluate expressions with parentheses.
+For example, evaluating ==(3 \+ 4) \* (5 - 2) ^ 3== results in 189.
 
 The sections that follow provide more information on  SmaCC's scanner and parser, and on the directives that control SmaCC.
 
-Subsequent sections explain how SmaCC can automatically produce an AST for you, and even how one parse tree can be transformed into another.
+Subsequent sections explain how SmaCC can automatically produce an AST for you and how to use the Rewrite Engine.
