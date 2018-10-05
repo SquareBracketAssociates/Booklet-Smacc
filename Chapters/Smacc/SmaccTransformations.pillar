@@ -26,6 +26,7 @@ Here is our grammar with these two additions.
 	%left "+" "-";
 	%left "*" "/";
 	%right "^";
+
 	%annotate_tokens;
 	%root Expression;
 	%prefix AST;
@@ -40,17 +41,16 @@ Here is our grammar with these two additions.
 		| Expression 'left' "^" 'operator' Expression 'right' {{Binary}}
 		| "(" Expression ")" {{}}
 		| Number
-		| Function;
+		| Function
+        ;
+
 	Number
-        : <number> {{Number}};
+        : <number> {{Number}}
+        ;
+
 	Function
-		: <name> "(" 'leftParen' _Arguments ")" 'rightParen' {{}};
-	_Arguments
-		:
-		| Arguments;
-	Arguments
-		: Expression 'argument'
-		| Arguments "," Expression 'argument';
+		: <name> "(" 'leftParen' (Expression 'argument' ("," Expression 'argument')* )? ")" 'rightParen' {{}}
+        ;
 ]]]
 
 And that is the only two things you need to do to activate the Rewrite Engine for your new language.

@@ -112,6 +112,7 @@ If non GLR (that is LR(1) or LALR(1)), the parser will try the other ids of the 
 
 
 !!!Token Action Methods
+@TokenActionMethods
 
 A ''Token Action Method'' is a hand-written method in your scanner whose name is the same as the name of a token, (for example, the method ==whitespace==).
 For this reason, token action methods are sometimes also called "matching methods".
@@ -176,43 +177,4 @@ SmaCC compiles the scanner into a bunch of conditional tests on characters.
 Normally, it assumes that characters have values between 0 and 255, and it can make some optimizations based on this fact.
 With the directive ==%unicode== in the input, SmaCC will assume that characters have values between 0 and 65535. 
 Unicode characters outside that range are not presently handled, and SmaCC is significantly slower with this option activated.
-
-!!!Scanner States
-
-Scanner states are a way to restrict tokens to specific scopes.
-A token can exist in multiple scopes (even all of them).
-This feature is especially useful when you have a set of tokens that should only be matched in a certain part of the grammar. 
-
-To illustrate states, let's take the example of a string interpolation feature where arbitrary expressions can be present in strings and will be interpolated as substrings.
-To parse =="A nice addition: {3+4}"== correctly, the part between curly braces should be an expression.
-Instead of parsing it as a string and postponing the treatment to later on, you can use scanner states to only allow certain tokens in certain states.
-Here is a sample example of a grammar for string interpolation:
-
-[[[
-%states default string;
-
-string <any_string>: [^"{}]+;
-<dquote>: ["];
-
-String
-    : ToString <dquote> <any_string>? (ToDefault "{" Expression ToString "}" <any_string>?)* ToDefault <dquote> 
-    ;
-
-ToDefault
-    : {self state: #default. ^ nil}
-    ;
-
-ToString
-    : {self state: #string. ^ nil}
-    ;
-
-Expression
-    ...
-]]]
-
-Here we define two scanner states, ==#string== and ==#defaut== (which is always the starting state for all parsers).
-Changing state involves accessing the parser in dummy semantic actions.
-When the state change is executed, the lookahead is already processed in the previous state.
-Be careful to change state one token before the "logical" swap, that way your next token will be scanned using the new state.
-
 

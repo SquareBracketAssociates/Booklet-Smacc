@@ -3,50 +3,61 @@
 This chapter addresses the problem of parsing a language with two interesting features:
 string interpolations and indentation.
 SmaCC can handle both, but doing so requires that we use some more advanced techniques.
-To deal with string interpolations we will use a scanner with multiple states;
-to deal with indentation will will add some custom token actions to the scanner.
+To deal with string interpolations we will use a scanner with multiple states; to deal with indentation will will add some custom token actions to the scanner.
 Lets look at these techniques one at a time.
+
 
 !!! Multi-state Scanners
 
-To motivate the need for a multi-state scanner, let's look at a feature of the Grace
-programming language: string interpolations.
+To motivate the need for a multi-state scanner, let's look at a feature of the Grace programming language: string interpolations.
 Similar features are available in many other languages, including JavaScript and Scala.
 
-In Grace, a ==StringLiteral== is a sequence of characters enclosed by double quotes;
-a ==StringConstructor== is like a string literal, but can also contain Grace expressions
-surrounded by braces.  Here is an example.
+In Grace, a ==StringLiteral== is a sequence of characters enclosed by double quotes; 
+a ==StringConstructor== is like a string literal, but can also contain Grace expressions surrounded by braces.
+Here is an example.
+
 [[[
 "the value of count is {count}."
 ]]]
 
-The value of this string is determined by evaluating the variable ==count==, converting the answer to a string (by sending it the ==asString== message), and interpolating the resulting string in place of the brace expression.
-So, if ==count== is ==19==, the final value of the constructed string will be
+The value of this string is determined by evaluating the variable ==count==, converting the answer to a string (by sending it the ==asString== message), 
+and interpolating the resulting string in place of the brace expression.
+So, if ==count== is ==19==, the final value of the constructed string will be:
+
 [[[
 "the value of count is 19."
 ]]]
 
-If the expressions between braces were restricted to simple identifiers, this would pose no problem for the scanner, but the Grace language allows arbitrary code to appear between the braces.  Such code can contain matched string quotes and matched pairs of braces.
+If the expressions between braces were restricted to simple identifiers, this would pose no problem for the scanner.
+However the Grace language allows arbitrary code to appear between the braces.
+Such code can contain matched string quotes and matched pairs of braces.
 (In Grace, outside of strings, braces are used to enclose blocks, i.e., they mean roughly the same as brackets in Smalltalk.)
 
 If you remember your formal language theory, you will know that the language of properly nested parentheses is not regular.
-So we cannot write simple regular expressions in the scanner that will correctly tokenize this language; in essence, the problem is that a regular expression, (or, more precisely, the finite state automaton that recognizes the language defined by that expression) can't maintain an unbounded counter.  What should we do?
+So we cannot write simple regular expressions in the scanner that will correctly tokenize this language.
+In essence, the problem is that a regular expression, (or, more precisely, the finite state automaton that recognizes the language defined by that expression) can't maintain an unbounded counter.
+What should we do?
 
-SmaCC lets us solve this problem by building a scanner with two separate “states”: a special state for scanning strings, and a default state for the rest of the language.  We declare the ==string== state as follows:
+SmaCC lets us solve this problem by building a scanner with two separate “states”: a special state for scanning strings, and a default state for the rest of the language.
+We declare the ==string== state as follows:
+
 [[[
 %states string ;
 ]]]
 
 The default state does not need to be declared explicitly.
 
-Scanner rules prefixed with the name of a state operate only in that state.  For example:
+Scanner rules prefixed with the name of a state operate only in that state.
+For example:
 
 [[[
 string <stringSegment> : ( [^\"\{\\\x00-\x1F] | \xA0 | \\[nt\{\}\\\] ) + ;
 ]]]
+
 defines a ==<stringSegment>== as one or more characters, ''excluding'' the double-quote, open-brace, backslash, or any of the control characters between ==0== and hex ==1F==, or the non-breaking space hex ==A0==, or one of the backslash escapes \n, \t, \{, \}, \", \r, \l, \_ and \\.
 However, this definition operates only in the ''string'' state, which stops it from matching, for example, identifiers.
-Similarly, identifiers and whitespace are recognized only in the ==default== state (which stops them for matching the content of a string).  We want double-quotes (which delimit strings) to be recognized in both states, so we prefix that rule with both names.
+Similarly, identifiers and whitespace are recognized only in the ==default== state (which stops them for matching the content of a string).
+We want double-quotes (which delimit strings) to be recognized in both states, so we prefix that rule with both names.
 
 [[[
 default <id> : [a-zA-Z_] [a-zA-Z0-9_'] * ;
@@ -54,12 +65,16 @@ default <whitespace>: ( \x20 | \xA0 ) + ;
 default string <dquote>:  ["] ;
 ]]]
 
-What remains is to switch the scanner into the ==string== state when an opening string quote is encountered, and to switch it back to the ==default== state either when it finds either the closing string quote, or an opening brace. How can we achieve this?
+What remains is to switch the scanner into the ==string== state when an opening string quote is encountered.
+Then it needs to switch back to the ==default== state either when it finds either the closing string quote, or an opening brace.
+How can we achieve this?
 
-One possibility is to write custom token methods in the scanner, which might count opening and closing braces and determine when the brace that closes the interpolation has been found.  But there is a better solution, which takes advantage of the fact that SmaCC does not run the scanner and parser as separate passes.
+One possibility is to write custom token methods in the scanner, which might count opening and closing braces and determine when the brace that closes the interpolation has been found.
+But there is a better solution, which takes advantage of the fact that SmaCC does not run the scanner and parser as separate passes.
 Instead, the parser calls the scanner when, and only when, the parser needs the next token.
 
 Here are the parser rules that change the scanner state:
+
 [[[
 StartString
     : { self state: #string. ^ nil}
@@ -69,10 +84,10 @@ RetDefault
     ;
 ]]]
 
-These rules both match the empty input, so they don't actually parse anything;
-their only function is to force parser actions to be executed.
-The non-terminals that they define are used in the rules for ==StringLiteral==
-and ==StringConstructor== (which, for simplicity, are shown without the names for the components, or the parser actions).
+These rules both match the empty input, so they don't actually parse anything.
+Their only function is to force parser actions to be executed.
+The non-terminals that they define are used in the rules for ==StringLiteral== and ==StringConstructor==.
+
 [[[
 StringLiteral
     : StartString <dquote> <stringSegment> ? RetDefault <dquote>
@@ -81,45 +96,53 @@ StringConstructor
     : StartString <dquote> <stringSegment> ? ( RetDefault "{" Expression StartString "}" <stringSegment> ? ) + RetDefault <dquote>
     ;
 ]]]
+
 The first rule says that a ==StringLiteral== starts with a ==<dquote>== token, which is followed by an optional ==<stringSegment>==, and a closing ==<dquote>==.
-The initial ==StartString== non-terminal can be thought of as a “call” of the ==StartString== parser action, which,
-as we saw above, sets the scanner state to ==string==.
+The initial ==StartString== non-terminal can be thought of as a “call” of the ==StartString== parser action, which, as we saw above, sets the scanner state to ==string==.
 This action won't be executed until ''after'' the next token (==<dquote>==) is scanned, but when ==<stringSegment>== is scanned,
 the scanner will be in state ==string==, and thus the scanner rule for ==<stringSegment>== will be applied.
 Similarly, after the end of the ==<stringSegment>==, the ==RetDefault== action will return the scanner to the ''default'' state.
 This won't happen until ''after'' the ==<dquote>== is scanned, but since the rule for ==<dquote>== is valid in both the default state and the string state, that's OK.
 
 The rule for ==StringConstructor== is a bit more complicated, and it's for this one that we really need multiple states.
-This rule allows multiple interpolations enclosed between braces, but the ==RetDefault== production is used to return the scanner to the ''default'' state before each opening brace, and then the ==StartString== production is used to change it to the ''string'' state at the closing brace that marks the end of the interpolation.
+This rule allows multiple interpolations enclosed between braces.
+The ==RetDefault== production is used to return the scanner to the ''default'' state before each opening brace.
+Then the ==StartString== production is used to return it to the ''string'' state at the closing brace that marks the end of the interpolation.
 Once again, because of the way that the parser works, there is a one token “delay” before the state-change takes effect.
 This is because the parser won't execute an action until the ''next'' token has been read, and the parser has determined that a reduce action is appropriate.
 
 The overall effect is as if there were two different scanners: one for strings, and one for the rest of the source program.
 The appropriate scanner is used for each part of the input, without further effort.
 
+
 !!! Indentation-Sensitive Parsing
 
 In many languages, the layout of the source code matters.
 Some languages, like Haskell and Python, use layout to indicate the start and end of code blocks.
-A common way to describe the syntax of such languages is to imagine a pre-pass over the input that examines the layout and inserts ''indent'' and ''outdent'' tokens whenever the indentation changes.  The grammar of the language is then written in terms of these tokens.
+A common way to describe the syntax of such languages is to imagine a pre-pass over the input that examines the layout and inserts ''indent'' and ''outdent'' tokens whenever the indentation changes.
+The grammar of the language is then written in terms of these tokens.
 Grace is somewhat simpler than Haskell and Python in that its code blocks are delimited by =={== braces ==}==.
 It is similar, though, in that it requires the body of a code block to be indented more than the surrounding code.
 How can we enforce a rule like this using SmaCC?
 
+
 !!!! Using Token Actions to Customize the Scanner
 
 The key idea is to insert custom code into the scanner using SmaCC's ''token actions''.
-Recall from the section on ''Token Action Methods'' (make that a cross-reference) that, whenever a SmaCC scanner recognizes a token, a correspondingly-named method in the scanner will be executed—if such a method exists.
+Recall from the section *@TokenActionMethods* on ''Token Action Methods'' that, whenever a SmaCC scanner recognizes a token, a correspondingly-named method in the scanner will be executed—if such a method exists.
 Now consider the following token definitions from Grace's grammar:
+
 [[[
-default <whitespace>:  ( \x20 | \xA0 ) + ;
-default <newline>:  ( \r | \n |  \r\n  | \x2028 ) <whitespace> ? ;
+default <whitespace> :  ( \x20 | \xA0 ) + ;
+default <newline> :  ( \r | \n |  \r\n  | \x2028 ) <whitespace> ? ;
 ]]]
+
 Grace distinguishes between spaces and newlines.
 There is an inherited token action for ==<whitespace>==
 that resets the scanner to start looking for a new token, but ignores the whitespace itself.
 This is fine for our purposes, so long as it applies only to spaces, and not to newlines.
 For the latter, we need to write a separate method; the ==newline== method in ==GraceScanner== starts like this.
+
 [[[
 newline
     "a newline has been matched (including the spaces that follow it).
@@ -150,23 +173,28 @@ Depending on the state of the scanner, this method will do one of three things.
 
 !!!! Using Newlines to Separate Statements
 
-To use newlines to separate statements, the grammar for Grace defines the non-terminal ==Ss== (statement separator) like this:
+To use newlines to separate statements, the grammar for Grace defines the non-terminal ==Ssep== (statement separator) like this:
+
 [[[
-Ss
+Ssep
     : ";"
     | <newline>
-    | Ss 'ss' ( ";" | <newline> )
+    | Ssep 'ss' ( ";" | <newline> )
     ;
 ]]]
+
 Hence, a semicolon, a newline, or any series of semicolons and newlines are all treated as statement separators.
-Other productions are then written using ==Ss==.
+Other productions are then written using ==Ssep==.
 For example, here is part of the definition of a ==Block==, which is a sequence of statements.
+
 [[[
 Block
     : ...
-    | "{" Ss '_' ? ( Statement 'item' ( Ss '_' Statement  'item' ) * Ss '_' ? ) ?  "}"
+    | "{" Ssep '_' ? ( Statement 'item' ( Ssep '_' Statement  'item' ) * Ssep '_' ? ) ?  "}"
 ]]]
+
 Notice that the grammar is explicit about allowing (but not requiring) a newline (or a semicolon) after the =={== that opens the block, allowing (but not requiring) a newline (or a semicolon) before the ==}== that closes the block, and requiring a newline or semicolon between the ==Statement==s in the block.
+
 
 !!!! Augmenting the State of the Scanner
 
@@ -177,71 +205,85 @@ You can introduce as many extra instance variables into the scanner as you need 
 In Grace, the rule is that indentation ''must'' increase after a =={==, and must return to the prior level with (or after) the matching ==}==.
 This means, of course, that we need to keep track of the number of =={== and ==}== tokens on the line that has just ended, so that we know if there were more of one than the other.
 To do this, we need to add a variable ==currentLineBraceDepth== to ==GraceScanner==.
-We can do this directly by editing the class definition for ==GraceScanner==; there is no SmaCC directive to add scanner instance variables. (This is unlike AST instance variables, where we must use the ==%attributes== directive).
-We add an ==initialize== method in ==GraceScanner== to set the initial value of ==currentLineBraceDepth== to 0, and add token-action methods ==leftBrace== and ==rightBrace==.
+We can do this directly by editing the class definition for ==GraceScanner==; there is no SmaCC directive to add scanner instance variables
+(This is unlike AST instance variables, where we must use the ==%attributes== directive).
+We add an ==initialize== method in ==GraceScanner== to set the initial value of ==currentLineBraceDepth== to 0, and add token action methods ==leftBrace== and ==rightBrace==.
 Here is the ==leftBrace== method.
+
 [[[
 leftBrace
     (state = #default) ifTrue:  [ self incrementBraceDepth ].
     ^ self createTokenFor: '{'
 ]]]
-Notice once again that, because it is a token-action method, this method must return a token.
+
+Notice once again that, because it is a token action method, this method must return a token.
 Before it does so, it increments the brace depth—but only if the scanner is in the ==default== state.
 If, for example we are in the ==uninterpString== state, incrementing the brace depth would not be appropriate, because a =={== in an uninterpreted string does not start a code block.
 
 In contrast, in an ''interpreted'' string, =={== ''does'' start a code block;
 Grace handles that using the SmaCC parser action for starting a string interpolation:
+
 [[[
-StartInterp: { self state: #default.  scanner incrementBraceDepth. ^ nil } ;
+StartInterp: { self state: #default. scanner incrementBraceDepth. ^ nil } ;
 ]]]
-To ensure that indentation corresponds to brace depth,
-we also need to know the brace depth of the prior line.
+
+To ensure that indentation corresponds to brace depth, we also need to know the brace depth of the prior line.
 At the end of the ==newline== method, we copy ==currentLineBraceDepth== into another scanner variable, ==priorLineBraceDepth==.
 For convenience, at the start of the ==newline== method, we compute the ==braceChange== as the difference between ==currentLineBraceDepth== and ==priorLineBraceDepth==.
 
+
 !!!! Unnamed Tokens
 
-These token actions for braces would work fine if Grace's grammar defined ==leftBrace== and ==rightBrace== as named tokens in the scanner, and then used those names in the grammar productions.  This ''is'' what it does for newlines, but in fact Grace's grammar is written using literal =="{"== and =="}"== tokens.  That is, we write
+These token actions for braces would work fine if Grace's grammar defined ==leftBrace== and ==rightBrace== as named tokens in the scanner, and then used those names in the grammar productions.
+This ''is'' what it does for newlines, but in fact Grace's grammar is written using literal =="{"== and =="}"== tokens.
+That is, we write:
+
 [[[
 Block
     : ...
-    | "{" Ss '_' ? ( Statement 'item' ( Ss '_' Statement  'item' ) * Ss '_' ? ) ?  "}"
+    | "{" Ssep '_' ? ( Statement 'item' ( Ssep '_' Statement  'item' ) * Ssep '_' ? ) ?  "}"
 ]]]
+
 and not
+
 [[[Block
     : ...
-    | <leftBrace> Ss '_' ? ( Statement 'item' ( Ss '_' Statement  'item' ) * Ss '_' ? ) ?  <rightBrace>
+    | <leftBrace> Ssep '_' ? ( Statement 'item' ( Ssep '_' Statement  'item' ) * Ssep '_' ? ) ?  <rightBrace>
 ]]]
+
 because the latter is harder to read.
 
 SmaCC happily turns literal tokens like =="{"== into scanner tokens; you can see them in the ''Symbols'' tab at the bottom of SmaCC's GUI.
 But it names these tokens with quoted strings.
-This is a problem because we can't write a Smalltalk token-action method with a name such as =="{"==.
+This is a problem because we can't write a Smalltalk token action method with a name such as =="{"==.
 What should we do to set up the connection between the ==leftBrace== method and the =="{"== token?
 
-Before we can answer that question, we need to look and see how SmaCC sets up the connection between a ''named'' token and its token-action method.
+Before we can answer that question, we need to look and see how SmaCC sets up the connection between a ''named'' token and its token action method.
 To make this possible, SmaCC generates a method in the scanner called ==tokenActions== that returns an array.
 Each entry in that array corresponds to a scanner token, using the numeric codes that you see in the ''Scanner'' tab of SmaCC's GUI.
 If the array entry is ==nil==, there is no special action for the corresponding symbol; otherwise, the scanner performs the action specified.
-The code that implements this is found at the end of ==SmaCCScanner >> reportLastMatch==.
+The code that implements this is found at the end of ==SmaCCScanner>>reportLastMatch==.
 Here is a slightly simplified version:
+
 [[[
     action := self tokenActions at: matchActions first.
     ^ action notNil
         ifTrue: [ self perform: action ]
         ifFalse: [ self createTokenFor: string ]
 ]]]
+
 In this code, ==matchActions== is an ''array'' of scanner symbols that describe the token that has just been matched.
 Recall that SmaCC allows you to write overlapping symbol definitions; if you do so, this array will contain ''all'' those that match the input.
 If there is a single match, the array will have size 1.
 The array contains the numeric symbol codes used internally by the scanner; these codes are used to index into the ==tokenActions== array.
 
-Let's assume that SmaCC happens to assign the numeric code 41 to ==<whiteSpace>==,  42 to ==<comment>== and 43 to ==<newline>==.
-The ==tokenActions== array generated by SmaCC will contain mostly ==nil==, but elements 41, 42 and 43 will then be ==#whitespace, #comment== and ==#newline==, because SmaCC found methods with these names in the scanner when it generated the table.
+Let's assume that SmaCC happens to assign the numeric code 41 to ==<whiteSpace>==, 42 to ==<comment>== and 43 to ==<newline>==.
+The ==tokenActions== array generated by SmaCC will contain mostly ==nil==, but elements 41, 42 and 43 will then be ==#whitespace==, ==#comment== and ==#newline==, because SmaCC found methods with these names in the scanner when it generated the table.
 
-Now that we know about the ==tokenActions== array, it's a fairly simple matter to patch-in the names of the ==leftBrace== and ==rightBrace== token-action methods at the appropriate indexes.
+Now that we know about the ==tokenActions== array, it's a fairly simple matter to patch-in the names of the ==leftBrace== and ==rightBrace== token action methods at the appropriate indexes.
 We do this in the ''class side'' initialization, so that it is done just once, not every time a scanner is run.
 Here are the methods.
+
 [[[
 initialize
     self patchTokenActions
@@ -272,31 +314,36 @@ installNewTokenActionsArray: anArray
     newMethod := String streamContents: [ :s | 
         s << 'tokenActions' ; cr ; tab ; << '^ '; << anArray printString ]. 
     self compile: newMethod classified: 'generated'
-
 ]]]
+
 Inconveniently, the list of symbol names is stored in an instance method of the parser, not in the scanner.
 We add a class instance variable ==symbolNames== to cache this information in the scanner.
-You will notice that, in addition to patching-in actions for the left and right braces, we also patch in actions for the assignment symbol and for reserved words.
+You will notice that, in addition to patching-in actions for the left and right braces, we also patch-in actions for the assignment symbol and for reserved words.
 We will not discuss these actions here, because they are not related to handling layout.
 
-Having calculated the new token actions array, we need to get SmaCC to use it.  If SmaCC had stored it in a variable, all that would be necessary would be to overwrite that variable.  But it is stored as a literal in a method!
+Having calculated the new token actions array, we need to get SmaCC to use it.
+If SmaCC had stored it in a variable, all that would be necessary would be to overwrite that variable.
+But it is stored as a literal in a method!
 We handle this problem by simply generating and compiling a modified version of that method.
 The ease with which Smalltalk lets us do meta-programming saves the day.
 
 There is actually an alternative to compiling a new method, which we will encourage you ''not'' to use!
 Because of what many people regard as a bug in the Smalltalk language specification, it is actually possible to modify an array literal.
-That is, rather than copying the literal as we have done, it is possible to perform ==at:put:== operations on the literal itself!  There are several problems with doing this, not the least of which is that when you read the code, you will see one thing, but when you execute it, you will get another.
+That is, rather than copying the literal as we have done, it is possible to perform ==at:put:== operations on the literal itself!
+There are several problems with doing this, not the least of which is that when you read the code, you will see one thing, but when you execute it, you will get another.
 In our view, recompiling the method that returns the literal is a far better approach.
 
 Perhaps in a future version of SmaCC, there will be a directive to connect un-named tokens with token actions.
 Then, the work-around we have just described will not be necessary.
 Nevertheless, it does well-illustrate the amazing flexibility of SmaCC.
 
+
 !!!!Closing blocks
 
 With brace depth being tracked by the ==leftBrace== and ==rightBrace== methods, the ==newline== method has the information that it needs to check that the indentation increases after each left brace.
 We also need to check that indentation returns to the previous level with the matching right brace.
-This requires that we keep a stack of prior indentations, push the new indentation onto the stack then we see an increase, pop it when we see a decrease, and check that the new, decreased indentation is the same as the value on the top of the stack.  This requires another scanner instance variable, which we call ==indentStack==
+This requires that we keep a stack of prior indentations, push the new indentation onto the stack then we see an increase, pop it when we see a decrease, and check that the new, decreased indentation is the same as the value on the top of the stack.
+This requires another scanner instance variable, which we call ==indentStack==.
 
 There is a slight complication because Grace allows both of the following forms
 
@@ -306,7 +353,9 @@ if (condition) then {
     blockBody2 }
 nextStatement
 ]]]
+
 and
+
 [[[
 if (condition) then {
     blockBody1
@@ -314,11 +363,13 @@ if (condition) then {
 }
 nextStatement
 ]]]
+
 that is, a right brace can appear either at the ''end'' of the last line of a block, in which case the line containing the brace is indented, ''or'' at the ''start'' of the line that follows the block.
 In the latter case the right brace is ''not'' indented, but must be at the same indentation as the line that contains the corresponding left brace.
-The second case looks better, but is actually anomalous:
-when the line containing just the right brace starts, the block has not yet been closed, so we would normally expect the line to be indented.
+The second case looks better, but is actually anomalous: when the line containing just the right brace starts, 
+the block has not yet been closed, so we would normally expect the line to be indented.
 It's fairly easy to make an exception for this case:
+
 [[[
 checkAndRecordIndentStatus
     currentCharacter = Character tab ifTrue: [ ^ self lexicalError: 'Please indent with spaces, not tabs' ].
@@ -330,8 +381,10 @@ checkAndRecordIndentStatus
 The scanner variable ==currentCharacter== is set by SmaCC to contain the character ''following'' those that make up the token that has just been matched—in our case, the character following the newline and the leading spaces.
 So it is easy to check if it is a right brace, and adjust ==braceChange== if necessary.
 
-The scanner variable ==outputStream== is a stream that contains all of the characters that SmaCC has determined make up the current token.  In the case of a newline token, this will be the line end sequence itself, and the spaces that follow it.
+The scanner variable ==outputStream== is a stream that contains all of the characters that SmaCC has determined make up the current token.
+In the case of a newline token, this will be the line end sequence itself, and the spaces that follow it.
 We use this variable to calculate the current indent:
+
 [[[
 calculateCurrentIndent
     | ch str |
@@ -341,22 +394,21 @@ calculateCurrentIndent
     (ch = Character cr) ifTrue: [str peekFor: Character lf].
     ^ str size - str position
 ]]]
+
 The Grace language specification says that a line feed following a carriage return is ignored, so we are careful not to include it when we calculate the indentation.
 It should also be possible to use the character position reported by ==SmaCCLineNumberStream== to calculate the current indent.
 
 
-
 !!!!Continuation Lines
 
-If Grace changed indentation ''only'' to indicate an increase in the brace level, the ==newline== token-action method would be quite simple, and we would already have the all the pieces we need.
+If Grace changed indentation ''only'' to indicate an increase in the brace level, the ==newline== token action method would be quite simple, and we would already have the all the pieces we need.
 However, Grace also uses indentation to indicate a continuation line, that is, two or more physical lines that should be treated as a single logical line.
 This is useful when a single statement is too long to fit on a line, and it is necessary to break it into several lines; the additional line breaks should ''not'' be treated as spaces.
-Python signals continuation lines by requiring that the programmer escape the intermediate newline by preceeding it with a backslash;
-this is simpler for the scanner, but uglier for the reader.
+Python signals continuation lines by requiring that the programmer escape the intermediate newline by preceeding it with a backslash; this is simpler for the scanner, but uglier for the reader.
 
 Grace's rule is that an increase in indentation that does ''not'' correspond to the start of a code block signals a continuation line.
-Further lines with the same (or greater) indentation are part of the continuation;
-the end of the continuation is signalled by a return to the previous indentation, or by an un-matched left brace.
+Further lines with the same (or greater) indentation are part of the continuation; the end of the continuation is signalled by a return 
+to the previous indentation, or by an un-matched left brace.
 
 Dealing with continuations requires another state variable ==indentOfLineBeingContinued==, which is ==nil== if no line is being continued.
 Another variable, ==maxIndentOfContinuation==, tracks the maximum indentation of the continuation.
@@ -368,7 +420,9 @@ Another of Grace's indentation rules says that blank lines are ignored for inden
 If this were not so, the number of spaces on a line that appears blank would be significant—a problem since these trailing spaces are invisible, and are often removed by text editors.
 Lines that contain nothing but a comment are treated as blank for the same reason; it seems excessive to require that the ==//== symbol that introduces the comment to be at a specific indentation.
 
-Implementing the first part of this rule is simple, but the part that treats comment lines as blank requires look-ahead. Here is how we implement the ==isLineEmpty== check.
+Implementing the first part of this rule is simple, but the part that treats comment lines as blank requires look-ahead.
+Here is how we implement the ==isLineEmpty== check.
+
 [[[
 isLineEmpty
     "answers true if the line that we just started is empty.
@@ -382,13 +436,17 @@ isLineEmpty
         ($/ = s next)
     ]
 ]]]
+
 The first line returns early with ==true== if there is nothing on the line but spaces; remember that any leading spaces will have been included as part of the ==<newline>== token.
 The second line returns early with ==false== if the first non-space character is not ==/==, because in those cases we know that the line does not start with a comment.
 The remaining case is where the first non-space character ''is'' ==/==; we need to see if it is followed by a second ==/==, indicating a comment, or by some other character, in which case the initial ==/== was an operator symbol.
 To do this we use ==explore:== on ==stream==, the scanner instance variable that names the inout stream.
-==explore: withABlock== saves the position of the stream, evaluate the code ==withABlock==, and then resets the stream to the saved position.  The method ==explore:== is implemented in the wrapper class ==SmaCCLineNumberStream==, but it is only as good as the ==position:== method in the underlying stream.
+==explore: withABlock== saves the position of the stream, evaluate the code ==withABlock==, and then resets the stream to the saved position.
+The method ==explore:== is implemented in the wrapper class ==SmaCCLineNumberStream==, but it is only as good as the ==position:== method in the underlying stream.
 Currently, there are some issues with ==position:== on streams that contain multiple-byte characters; the workaround is to read the whole stream into a string, and then create a stream on the string.
 
+
 !!!!The Rest of the Story
-If you wish to see all the details, the code for the Grace parser is available on [githib](https://github.com/apblack/GraceInPharo.git).
+
+If you wish to see all the details, the code for the Grace parser is available on *github>https://github.com/apblack/GraceInPharo.git*.
 
