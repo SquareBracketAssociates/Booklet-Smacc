@@ -5,6 +5,7 @@
 !!! Reference example 
 
 Let us take the following grammar. 
+
 [[[
 <number> : [0-9]+ (\. [0-9]*) ? ;
 <whitespace> : \s+;
@@ -31,11 +32,11 @@ Number
 	;
 ]]]
 
+
 !!! Metagrammar structure
 
-SmaCC grammars are written in EBNF format (Extended Backus-Naur Form) with a syntax
-ressembling closely the one from GNU Bison.
-A grammar is composed of: 
+SmaCC grammars are written in EBNF format (Extended Backus-Naur Form) with a syntax ressembling closely the one from GNU Bison.
+A grammar is composed of:
 
 - Scanner rules: they define tokens to recognize in the input stream through regex,
 - Parser rules: they define the production rules of your grammar,
@@ -43,7 +44,9 @@ A grammar is composed of:
 
 Note that you can also find the metagrammar of SmaCC described in itself in the ==SmaCCDefinitionParser==.
 
+
 !!!! Elements 
+
 
 !!!! Production rule
 
@@ -69,10 +72,9 @@ An alternative can be composed of any variation of:
 - scanner tokens
 - keywords (delimited by =="==)
 
-In addition, you can use the single curly braces =={}== to define an arbitrary semantic 
-action or the double curly braces =={{}}== to create an AST node instead.
-Non terminals and tokens can be annotated with variable names (delimited by =='==) that
-will be the instance variable names of the AST node.
+In addition, you can use the single curly braces =={}== to define an arbitrary semantic  action or the double curly braces =={{}}== to create an AST node instead.
+Non terminals and tokens can be annotated with variable names (delimited by =='==) that will be the instance variable names of the AST node.
+
 
 !!!! Tokens
 
@@ -83,8 +85,8 @@ A token specification is composed of a token name and a token regular expression
 <TokenName>    :    RegularExpression ;
 ]]]
 
-The following token specification describes a number: It starts with one or more digits, 
-possibly followed by a decimal point with zero or more digits after it. 
+The following token specification describes a number.
+It starts with one or more digits, possibly followed by a decimal point with zero or more digits after it. 
 The scanner definition for this token is:
 
 [[[
@@ -112,6 +114,7 @@ Let's go over each part:
 ; ==;==
 :Terminates a token specification.
 
+
 !!!! Keywords
 
 Keywords are defined in the production and delimited by =="==. 
@@ -125,13 +128,16 @@ Expression
 	;
 ]]]
 
+
 !!!! Non Terminal
 
 In the production rule ==Expression 'left' "+" 'operator' Expression 'right'==, Expression is a non terminal.
 
+
 !!!! Variables
 
-Variables give name to one element of a production. For example 
+Variables give name to one element of a production.
+For example 
 
 [[[
 Expression 'left' "^" 'operator' Expression 'right'

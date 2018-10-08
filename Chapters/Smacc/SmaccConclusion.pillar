@@ -1,3 +1,6 @@
 !! Conclusion
 
-SmaCC is a really strong and stable library that is used in production since many years. It is an essential assets for dealing with languages.  While PetitParser (See Deep into Pharo *http://books.pharo.org*) is useful for composing and reusing fragments of parsers, Smacc offers speed and more traditional parsing technology.
+SmaCC is a really strong and stable library that is used in production for many years.
+It is an essential asset for dealing with languages.
+While PetitParser (See Deep into Pharo *http://books.pharo.org*) is useful for composing and reusing fragments of parsers, Smacc offers speed and more traditional parsing technology.
+
