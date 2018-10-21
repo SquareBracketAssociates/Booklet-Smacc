@@ -34,7 +34,7 @@ Number
 ]]]
 
 
-!!! Building nodes 
+!!! Building Nodes 
 
 Building an AST-building parser works similarly to the normal parser.
 Instead of inserting Pharo code after each production rule inside braces, =={}==, we insert the class name inside of double braces, =={{}}==.
@@ -73,7 +73,7 @@ Since the root has not been defined, SmaCC compiles the grammar as if the =={{..
 - Notice that we didn't annotate the last production in the Expression definition. Since it only contains a single item, Number, SmaCC will pull up its value which in this case will be a Number AST node.
 
 
-!!! Variables and unnamed entities
+!!! Variables and Unnamed Entities
 
 Now, let's add variable names to our rules:
 
@@ -118,7 +118,7 @@ The method ==SmaCCGrammar class>>tokenNameMap== contains the mapping to convert 
 You can modify this dictionary if you wish to change the default names.
 
 
-!!! Unnamed symbols
+!!! Unnamed Symbols
 
 Notice that we did not name Expression in the ==(== Expression ==)== production rule.
 When you don't name a symbol in a production, SmaCC tries to figure out what you want to do.
@@ -176,7 +176,7 @@ Finally, the ==ASTNumberNode== will be a subclass of ==ASTExpressionNode== and w
 Now, if we inspect the result of parsing ==3 \+ 4==, we'll get an Inspector on an ==ASTBinaryNode==.
 
 
-!!! AST comparison
+!!! AST Comparison
 
 SmaCC also generates the comparison methods for each AST node.
 Let's add function evaluation to our expression grammar to illustrate this point.
@@ -255,7 +255,7 @@ Function
 Now, we get true when we compare ==(CalculatorParser parse: '(3 \+ 4)') = (CalculatorParser parse: '3\+4')==.
 
 
-!!! Extending the visitor
+!!! Extending the Visitor
 
 Finally, let's subclass the generated visitor to create a visitor that evaluates the expressions.
 Here's the code for Pharo:

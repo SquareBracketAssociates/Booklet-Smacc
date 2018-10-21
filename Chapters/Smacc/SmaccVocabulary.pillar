@@ -1,8 +1,9 @@
 !! Vocabulary
 
+This chapter defines some vocabulary used by Smacc. 
 
 
-!!! Reference example 
+!!! Reference Example 
 
 Let us take the following grammar. 
 
@@ -35,7 +36,7 @@ Number
 
 !!! Metagrammar structure
 
-SmaCC grammars are written in EBNF format (Extended Backus-Naur Form) with a syntax ressembling closely the one from GNU Bison.
+SmaCC grammars are written in EBNF format (Extended Backus-Naur Form) with a syntax ressembling closely to the one of GNU Bison.
 A grammar is composed of:
 
 - Scanner rules: they define tokens to recognize in the input stream through regex,
@@ -45,7 +46,7 @@ A grammar is composed of:
 Note that you can also find the metagrammar of SmaCC described in itself in the ==SmaCCDefinitionParser==.
 
 
-!!!! Elements 
+!!! Elements 
 
 
 !!!! Production rule

@@ -77,7 +77,7 @@ Here are the parser rules that change the scanner state:
 
 [[[
 StartString
-    : { self state: #string. ^ nil}
+    : { self state: #string. ^ nil }
     ;
 RetDefault
     : { self state: #default. ^ nil }
@@ -129,7 +129,7 @@ How can we enforce a rule like this using SmaCC?
 !!!! Using Token Actions to Customize the Scanner
 
 The key idea is to insert custom code into the scanner using SmaCC's ''token actions''.
-Recall from the section *@TokenActionMethods* on ''Token Action Methods'' that, whenever a SmaCC scanner recognizes a token, a correspondingly-named method in the scanner will be executed—if such a method exists.
+Recall from Section *@TokenActionMethods* on ''Token Action Methods'' that, whenever a SmaCC scanner recognizes a token, a correspondingly-named method in the scanner will be executed—if such a method exists.
 Now consider the following token definitions from Grace's grammar:
 
 [[[
@@ -166,9 +166,9 @@ newline
 
 Depending on the state of the scanner, this method will do one of three things.
 
-   # Return ==self whitespace== if the newline is to be ignored, that is, to be treated like a space.
-   # Return a newline token; the grammar for Grace treats newlines as statement separators, so when the parser sees such a token, it recognizes the end of a statement.
-   # Signal an exception, which will be caught by the surrounding context and used to produce an error message for the user.
+# Return ==self whitespace== if the newline is to be ignored, that is, to be treated like a space.
+# Return a newline token; the grammar for Grace treats newlines as statement separators, so when the parser sees such a token, it recognizes the end of a statement.
+# Signal an exception, which will be caught by the surrounding context and used to produce an error message for the user.
 
 
 !!!! Using Newlines to Separate Statements
@@ -287,7 +287,9 @@ Here are the methods.
 [[[
 initialize
     self patchTokenActions
+]]]
 
+[[[
 patchTokenActions
     | tokenActionsLiteral newTokenActions |
     (GraceParser canUnderstand: #symbolNames) ifFalse: [ ^ self ]. 
@@ -303,12 +305,16 @@ patchTokenActions
     (newTokenActions = tokenActionsLiteral) ifFalse: [ 
         self installNewTokenActionsArray: newTokenActions.
     ]
+]]]
 
+[[[
 patch: token withAction: action inArray: tokenActions
     | location |
     location := symbolNames indexOf: token.
     tokenActions at: location put: action
+]]]
 
+[[[
 installNewTokenActionsArray: anArray
     | newMethod |
     newMethod := String streamContents: [ :s | 
@@ -338,7 +344,7 @@ Then, the work-around we have just described will not be necessary.
 Nevertheless, it does well-illustrate the amazing flexibility of SmaCC.
 
 
-!!!!Closing blocks
+!!!!Closing Blocks
 
 With brace depth being tracked by the ==leftBrace== and ==rightBrace== methods, the ==newline== method has the information that it needs to check that the indentation increases after each left brace.
 We also need to check that indentation returns to the previous level with the matching right brace.

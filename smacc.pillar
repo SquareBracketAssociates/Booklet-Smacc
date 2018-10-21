@@ -1,23 +1,23 @@
 
 
-${inputFile:Chapters/Smacc/SmaccIntro.pillar}$
+${inputFile:path=Chapters/Smacc/SmaccIntro.pillar}$
 
-${inputFile:Chapters/Smacc/SmaccTutorial.pillar}$
+${inputFile:path=Chapters/Smacc/SmaccTutorial.pillar}$
 
-${inputFile:Chapters/Smacc/SmaccScanner.pillar}$
+${inputFile:path=Chapters/Smacc/SmaccScanner.pillar}$
 
-${inputFile:Chapters/Smacc/SmaccParser.pillar}$
+${inputFile:path=Chapters/Smacc/SmaccParser.pillar}$
 
-${inputFile:Chapters/Smacc/SmaccDirectives.pillar}$
+${inputFile:path=Chapters/Smacc/SmaccDirectives.pillar}$
 
-${inputFile:Chapters/Smacc/SmaccAST.pillar}$
+${inputFile:path=Chapters/Smacc/SmaccAST.pillar}$
 
-${inputFile:Chapters/Smacc/SmaccAdvanced.pillar}$
+${inputFile:path=Chapters/Smacc/SmaccAdvanced.pillar}$
 
-${inputFile:Chapters/Smacc/SmaccTransformations.pillar}$
+${inputFile:path=Chapters/Smacc/SmaccTransformations.pillar}$
 
-${inputFile:Chapters/Smacc/SmaccIdioms.pillar}$
+${inputFile:path=Chapters/Smacc/SmaccIdioms.pillar}$
 
-${inputFile:Chapters/Smacc/SmaccConclusion.pillar}$
+${inputFile:path=Chapters/Smacc/SmaccConclusion.pillar}$
 
-${inputFile:Chapters/Smacc/SmaccVocabulary.pillar}$
+${inputFile:path=Chapters/Smacc/SmaccVocabulary.pillar}$

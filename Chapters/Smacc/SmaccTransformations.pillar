@@ -65,7 +65,7 @@ Here is our grammar with these two additions.
 And that is the only two things you need to do to activate the Rewrite Engine for your new language.
 
 
-!!! Pattern matching expressions
+!!! Pattern matching Expressions
 
 Having made these changes, we can now define ''rewrite rules'' that specify how certain subtrees in the AST should be matched (the pattern) and how their substrings should be replaced (the transformation). 
 Patterns look like normal code from your language, but may include metavariables that are delimited by the ==<patternToken>==. 

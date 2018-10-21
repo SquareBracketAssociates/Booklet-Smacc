@@ -1,4 +1,4 @@
-!! A first SmaCC tutorial
+!! A First SmaCC Tutorial
 
 This tutorial demonstrates the basic features of SmaCC, the Smalltalk Compiler Compiler. 
 We will use SmaCC to create a simple calculator. 
@@ -6,7 +6,7 @@ This tutorial was originally developed by Don Roberts and John Brant, and later 
 by T. Goubier, S. Ducasse, J. Lecerf and Andrew Black.
 
 
-!!! Opening the tools
+!!! Opening the Tools
 Once you have loaded the code of SmaCC, you should open the SmaCC Parser Generator tool (Figure *@SmaCCGUI*). 
 In Pharo, you can do this using the ''Tools'' submenu of the ''World'' menu.
 
@@ -103,7 +103,7 @@ We are almost ready to compile a parser now, but first we need to specify the na
 
 Whenever SmaCC creates new classes, they are placed in the package (or package tag) named in the Package entry box. You may wish to select a different package by selecting it in the drop down menu or writing its name.
 
-!!! Testing Our Parser
+!!! Testing our Parser
 
 Now we are ready to test our parser. Go to the "test" pane, enter ==3 \+ 4==, and press "Parse"; you will see that the parser correctly parses it. If you press "Parse and inspect" you will see an inspector on an OrderedCollection that contains the parsed tokens, as shown in Figure *@3plus4Explorer*. This is because we haven't specified what the parser is supposed to do when it parses.
 
@@ -118,7 +118,7 @@ If you are interested in the generated parser, you may wish to look at the outpu
 - The Item Sets tab lists the LR item sets that were used in the parser. These are printed in a format that is similar to the format used by many text books.
 - The Messages tab is used to display any warnings generated while the parser was compiled. The most common warning is for ambiguous actions.
 
-!!! Defining actions
+!!! Defining Actions
 Now we need to define the actions that need to happen when we parse our expressions. Currently, our parser is just validating that the expression is a bunch of numbers added together. Generally, you want to create some structure that represents what you've parsed (e.g., a parse tree). However, in this case, we are not concerned about the structure, but we are concerned about the result: the ''value'' of the expression. For our example, we can calculate the value by modifying the grammar to be:
 
 [[[
@@ -153,7 +153,7 @@ Number
 
 This will result in the same language being parsed as in the previous example, with the same actions. Using named expressions makes it much easier to maintain your parsers. 
 
-!!! Extending the language
+!!! Extending the Language
 
 Let's extend our language to add subtraction. Here is the new grammar:
 
@@ -184,7 +184,7 @@ Number
 ]]]
 
 
-!!! Handling priority
+!!! Handling Priority
 
 Here we run into a problem. 
 If you evaluate =='2 \+ 3 \* 4'== you end up with 20. 
@@ -211,7 +211,7 @@ Number
 
 If you compile this grammar, you will see that =='2 \+ 3 \* 4'== evaluates to =='14'==, as you would expect. 
 
-!!! Handling priority with directives
+!!! Handling Priority with Directives
 
 As you can imagine, defining additional non-terminals gets pretty complicated as the number of levels of precedence increases. 
 We can use ambiguous grammars and precedence rules to simplify this situation. 
