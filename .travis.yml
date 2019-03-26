@@ -26,7 +26,8 @@ script:
 
 after_success:
   - wget -c https://github.com/probonopd/uploadtool/raw/master/upload.sh
-  - bash upload.sh smacc.pdf
+  - mv _result/pdf/smacc.pdf smacc-wip.pdf
+  - bash upload.sh smacc-wip.pdf
 
 branches:
   except:
