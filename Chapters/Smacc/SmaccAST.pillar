@@ -215,7 +215,7 @@ Function
 Now, if we inspect ==Add(3, 4)==, we will get something that looks like an ==ASTFunctionNode==.
 
 In addition to generating the node classes, SmaCC also generates the comparison methods for each AST node.
-For example, we can compare two parse nodes: ==(CalculatorParser parse: '3 \+ 4') = (CalculatorParser parse: '3\+4')==.
+For example, we can compare two parse nodes in a Playground: ==(CalculatorParser parse: '3 \+ 4') = (CalculatorParser parse: '3\+4')==.
 This returns true as whitespace is ignored.
 However, if we compare ==(CalculatorParser parse: '(3 \+ 4)') = (CalculatorParser parse: '3\+4')==, we get false, since the first expression has parentheses.
 We can tell SmaCC to ignore these by adding the ==\%ignore_variables== directive.
