@@ -25,58 +25,33 @@ If you wish to have a richer syntax, you can modify the scanner's parser: ==SmaC
 These classes were created using SmaCC and can be studied.
 
 
-;\\character
-:Matches a special character. The character immediately following the backslash is matched exactly, unless it is a letter. Backslash-letter combinations have other meanings and are specified below.
-;\\cLetter
-:Matches a control character. Control characters are the first 26 characters (e.g., \\cA equals ==Character value: 0==). The letter that follows the ==\\c== must be an uppercase letter.
-;\\d
-:Matches a digit, 0-9.
-;\\D
-:Matches anything that is not a digit.
-;\\f
-:Matches a form-feed character, ==Character value: 12==.
-;\\n
-:Matches a newline character, ==Character value: 10==.
-;\\r
-:Matches a carriage return character, ==Character value: 13==.
-;\\s
-:Matches any whitespace character, [ \\f\\n\\r\\t\\v].
-;\\S
-:Matches any non-whitespace character.
-;\\t
-:Matches a tab, ==Character value: 9==.
-;\\v
-:Matches a vertical tab, ==Character value: 11==.
-;\\w
-:Matches any letter, number or underscore, ==[A-Za-z0-9_]==.
-;\\W
-:Matches anything that is not a letter, number or underscore.
-;\\xHexNumber
-:Matches a character specified by the hex number following the ==\\x==. The hex number must be at least one character long and no more than four characters for Unicode characters and two characters for non-Unicode characters. For example, ==\\x20== matches the space character ==(Character value: 16r20)==, and ==\\x1FFF== matches ==Character value: 16r1FFF==.
-;<token>
-:Copies the definition of <token> into the current regular expression. For 	example, if we have ==<hexdigit> : \\d \| [A-F] ;==, we can use ==<hexdigit>== in a later rule: ==<hexnumber> : <hexdigit> \+ ;==.  Note that you must define a token ''before'' you use it in another rule.
-;<isMethod>
-:Copies the characters where ==Character>>isMethod== returns true into the current regular expression. For example, instead of using ==\\d==, we could use ==<isDigit>== since ==Character>>isDigit== returns true for digits.
-;[characters]
-:Matches one of the characters inside the [ ]. This is a shortcut for the ==\|== operator. In addition to single characters, you can also specify character ranges with the ==-== character. For example, ==[a-z]== matches any lower case letter.
-;[^characters]
-:Matches any character not listed in the characters block. ==[^a]== matches anything except for ==a==.
-;\# comment
-:Creates a comment that is ignored by SmaCC. Everything from the # to the end of the line is ignored.
-;exp1 \| exp2
-:Matches either exp1 or exp2.
-;exp1 exp2
-:Matches exp1 followed by exp2. ==\\d \\d== matches two digits.
-;exp\*
-:Matches exp zero or more times. ==0\*== matches ==\'\'== and ==000==.
-;exp?
-:Matches exp zero or one time. ==0?== matches only ==\'\'== or ==0==.
-;exp\+
-:Matches exp one or more times. ==0\+== matches ==0== and ==000==, but not ==\'\'==.
-;exp{min,max}
-:Matches exp at least min times but no more than max times. ==0{1,2}== matches only ==0== or ==00==. It does not match ==\'\'== or ==000==.
-;(exp)
-:Groups exp for precedence. For example, ==(a b)\*== matches ==ababab==. 	Without the parentheses, ==a b \*== would match ==abbbb== but not ==ababab==.
+|!Expression |!Description
+| \\character | :Matches a special character. The character immediately following the backslash is matched exactly, unless it is a letter. Backslash-letter combinations have other meanings and are specified below.
+| \\cLetter | Matches a control character. Control characters are the first 26 characters (e.g., \\cA equals ==Character value: 0==). The letter that follows the ==\\c== must be an uppercase letter.
+| \\d | Matches a digit, 0-9.
+| \\D | Matches anything that is not a digit.
+| \\f | Matches a form-feed character, ==Character value: 12==.
+| \\n | Matches a newline character, ==Character value: 10==.
+| \\r | Matches a carriage return character, ==Character value: 13==.
+| \\s | Matches any whitespace character, [ \\f\\n\\r\\t\\v].
+| \\S | Matches any non-whitespace character.
+| \\t | Matches a tab, ==Character value: 9==.
+| \\v | Matches a vertical tab, ==Character value: 11==.
+| \\w | Matches any letter, number or underscore, ==[A-Za-z0-9_]==.
+| \\W | Matches anything that is not a letter, number or underscore.
+| \\xHexNumber | Matches a character specified by the hex number following the ==\\x==. The hex number must be at least one character long and no more than four characters for Unicode characters and two characters for non-Unicode characters. For example, ==\\x20== matches the space character ==(Character value: 16r20)==, and ==\\x1FFF== matches ==Character value: 16r1FFF==.
+| <token> | Copies the definition of <token> into the current regular expression. For 	example, if we have ==<hexdigit> : \\d \| [A-F] ;==, we can use ==<hexdigit>== in a later rule: ==<hexnumber> : <hexdigit> \+ ;==.  Note that you must define a token ''before'' you use it in another rule.
+| <isMethod> | Copies the characters where ==Character>>isMethod== returns true into the current regular expression. For example, instead of using ==\\d==, we could use ==<isDigit>== since ==Character>>isDigit== returns true for digits.
+| [characters] | Matches one of the characters inside the [ ]. This is a shortcut for the ==\|== operator. In addition to single characters, you can also specify character ranges with the ==-== character. For example, ==[a-z]== matches any lower case letter.
+| [^characters] | Matches any character not listed in the characters block. ==[^a]== matches anything except for ==a==.
+| \# comment | Creates a comment that is ignored by SmaCC. Everything from the # to the end of the line is ignored.
+| exp1 \| exp2 | Matches either exp1 or exp2.
+| exp1 exp2 | Matches exp1 followed by exp2. ==\\d \\d== matches two digits.
+| exp\* | Matches exp zero or more times. ==0\*== matches ==\'\'== and ==000==.
+| exp? | Matches exp zero or one time. ==0?== matches only ==\'\'== or ==0==.
+| exp\+ | Matches exp one or more times. ==0\+== matches ==0== and ==000==, but not ==\'\'==.
+| exp{min,max} | Matches exp at least min times but no more than max times. ==0{1,2}== matches only ==0== or ==00==. It does not match ==\'\'== or ==000==.
+| (exp) | Groups exp for precedence. For example, ==(a b)\*== matches ==ababab==. Without the parentheses, ==a b \*== would match ==abbbb== but not ==ababab==.
 
 Since there are multiple ways to combine expressions, we need precedence rules for their combination.
 The or operator, ==\|==, has the lowest precedence and the ==\*==, ==?==, ==\+==, and =={,}== operators have the highest precedence.
