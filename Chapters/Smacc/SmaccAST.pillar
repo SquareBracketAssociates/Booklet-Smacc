@@ -215,7 +215,7 @@ Function
 Now, if we inspect ==Add(3, 4)==, we will get something that looks like an ==ASTFunctionNode==.
 
 In addition to generating the node classes, SmaCC also generates the comparison methods for each AST node.
-For example, we can compare two parse nodes: ==(CalculatorParser parse: '3 \+ 4') = (CalculatorParser parse: '3\+4')==.
+For example, we can compare two parse nodes in a Playground: ==(CalculatorParser parse: '3 \+ 4') = (CalculatorParser parse: '3\+4')==.
 This returns true as whitespace is ignored.
 However, if we compare ==(CalculatorParser parse: '(3 \+ 4)') = (CalculatorParser parse: '3\+4')==, we get false, since the first expression has parentheses.
 We can tell SmaCC to ignore these by adding the ==\%ignore_variables== directive.
@@ -272,8 +272,8 @@ ASTExpressionEvaluator >> functions
 	^functions
 		ifNil: 
 			[functions := (Dictionary new)
-						at: ''Add'' put: [:a :b | a + b];
-						yourself ]' classified: 'private'.
+						at: 'Add' put: [:a :b | a + b];
+						yourself ].
 ]]]
 
 
@@ -283,8 +283,8 @@ ASTExpressionEvaluator >> visitBinary: aBinary
 	left := self acceptNode: aBinary left.
 	right := self acceptNode: aBinary right.
 	operation := aBinary operator value.
-	operation = ''^'' ifTrue: [ ^left ** right ].
-	^left perform: operation asSymbol with: right' classified: 'visiting'.
+	operation = '^' ifTrue: [ ^left ** right ].
+	^left perform: operation asSymbol with: right.
 ]]]
 
 [[[
@@ -292,16 +292,16 @@ ASTExpressionEvaluator >> visitFunction: aFunction
 	| function arguments |
 	function := self functions at: aFunction nameToken value
 				ifAbsent: 
-					[self error: ''Function '' , 
+					[self error: 'Function ' , 
 						aFunction nameToken value , 
-						'' is not defined'' ].
+						' is not defined' ].
 	arguments := aFunction arguments collect: [ :each | self acceptNode: each ].
-	^function valueWithArguments: arguments asArray classified: 'visiting'.
+	^function valueWithArguments: arguments asArray.
 ]]]
 
 [[[
 ASTExpressionEvaluator >> visitNumber: aNumber
-	^ aNumber numberToken value asNumber' classified: 'visiting'.
+	^ aNumber numberToken value asNumber.
 ]]]
 
 Now we can evaluate ==ASTExpressionEvaluator new accept: (CalculatorParser parse: 'Add(3,4) \* 12 / 2 ^ (3 - 1) \+ 10')== and get 31.

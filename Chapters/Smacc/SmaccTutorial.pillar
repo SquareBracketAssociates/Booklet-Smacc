@@ -13,12 +13,12 @@ In Pharo, you can do this using the ''Tools'' submenu of the ''World'' menu.
 +SmaCC GUI Tool: The place to define the scanner and parser.>file://figures/SmaCCGUI.png|width=80|label=SmaCCGUI+
 
 Our first calculator is going to be relatively simple. It is going to take two numbers and add them together. 
-To use the SmaCC tool:
+To use the SmaCC tool in Pharo 8:
 - Edit the definition in the pane below the buttons.
 - Once you are done:
--- Accept (with the context menu) or Save (the button)
--- Name your parser (and scanner) by typing a name (for example, CalculatorParser) in the text field at the left of the Parser label, followed by return.
-- press either Compiler LR(1) or Compiled LALR(1) buttons to compile the parser.
+-- Name the Package for your scanner and parser by using the menu Options->Set package. If you do not already have a package, just type the name at the bottom and the package will be created when the parser and scanner are compiled.
+-- Name your parser by using the menu Options->Scanner Class... and typing a name (for example, CalculatorParser). Do the same with the scanner, using Options->Parser class...
+-- Compile, using the menu File->Save
 
 You are now ready to edit your first scanner and parser. Note that you edit everything in one file (using the SmaCC tool).
 Once compiled, the tools will generate two classes and fill them with sufficient information to create the scanner and parser, as shown as Figure *@SmaCCTutorial*.
@@ -99,13 +99,13 @@ This basically says that an expression is either a number, or an expression adde
 +First grammar: the Scanner part followed by the Parser part.>file://figures/SmaCCTutorial.png|width=80|label=SmaCCTutorial+
 
 !!! Compile the Scanner and the Parser
-We are almost ready to compile a parser now, but first we need to specify the names of the scanner and parser classes that SmaCC will create. These names are entered using the ==...== buttons for scanner class and parser class. Enter ==CalculatorScanner== and ==CalculatorParser== respectively. Once the class names are entered, press Compile LR(1) or Compile LALR(1). This will create new Pharo classes for the ==CalculatorScanner== and ==CalculatorParser==, and compile several methods in those classes. All the methods that SmaCC compiles will go into a "generated" method protocol. You should not change those methods or add new methods to the "generated" method protocols, because these methods are replaced or deleted each time you compile.
+We are almost ready to compile a parser now, but first we need to specify the names of the package, and the scanner and parser classes that SmaCC will create. These names are entered using the Options menu. Enter ==CalculatorScanner== and ==CalculatorParser== respectively. Once the class names are entered, compile by using the File->Save menu. This will create new Pharo classes for the ==CalculatorScanner== and ==CalculatorParser==, and compile several methods in those classes. All the methods that SmaCC compiles will go into a "generated" method protocol. You should not change those methods or add new methods to the "generated" method protocols, because these methods are replaced or deleted each time you compile.
 
-Whenever SmaCC creates new classes, they are placed in the package (or package tag) named in the Package entry box. You may wish to select a different package by selecting it in the drop down menu or writing its name.
+Whenever SmaCC creates new classes, they are placed in the package (or package tag) named in the Options->Set package entry box. You may wish to select a different package.
 
 !!! Testing our Parser
 
-Now we are ready to test our parser. Go to the "test" pane, enter ==3 \+ 4==, and press "Parse"; you will see that the parser correctly parses it. If you press "Parse and inspect" you will see an inspector on an OrderedCollection that contains the parsed tokens, as shown in Figure *@3plus4Explorer*. This is because we haven't specified what the parser is supposed to do when it parses.
+Now we are ready to test our parser. Go to the "test" tab, enter ==3 \+ 4==, highlight the expression and press "Evaluate"; you will see that the parser correctly parses it. If you press "Inspect..." you will see an inspector on an OrderedCollection that contains the parsed tokens, as shown in Figure *@3plus4Explorer*. This is because we haven't specified what the parser is supposed to do when it parses.
 
 You can also enter incorrect items as test input. For example, try to parse ==3 \+ \+ 4== or ==3 \+ a==. An error message should appear in the text.
 
@@ -134,7 +134,7 @@ Number
 The text between the braces is Pharo code that is evaluated when the grammar rule is applied. Strings that contain a number are replaced with the corresponding expression in the production. For example, in the first rule for Expression, the =='1'== will be replaced by the object that matches Expression, and the =='3'== will be replaced by the object that matches ==Number==. 
 The second item in the rule is the =="\+"== token. Since we already know what it is, there is no need to refer to it by number.
 
-Compile the new parser. Now, when you do a 'Parse and inspect' from the test pane containing ==3 \+ 4==, you should see the result: 7.
+Compile the new parser. Now, when you do a 'Inspect...' from the test pane containing ==3 \+ 4==, you should see the result: 7.
 
 !!! Named Expressions
 One problem with the quoted numbers in the previous example is that if you change a rule, you may also need to change the code for that rule. For example, if you inserted a new token at the beginning of the rule for Expression, then you would also need to increment all of the numeric references in the Pharo code. 
