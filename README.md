@@ -1,8 +1,5 @@
 # A booklet on the Smacc compiler compiler framework
 
-[![Build status][badge]][travis]
+[![Download PDF](https://img.shields.io/badge/Download-PDF-9cf.svg)](https://github.com/SquareBracketAssociates/Booklet-Smacc/releases/download/latest/smacc-wip.pdf)
+[![Centralized book generation](https://github.com/SquareBracketAssociates/Booklet-Smacc/actions/workflows/main.yml/badge.svg)](https://github.com/SquareBracketAssociates/Booklet-Smacc/actions/workflows/main.yml)
 
-[travis]: https://travis-ci.org/SquareBracketAssociates/Booklet-Smacc
-[badge]: https://travis-ci.org/SquareBracketAssociates/Booklet-Smacc.svg?branch=master
-
-The result from the latest successful Travis build can be found the releases pane of this page.
